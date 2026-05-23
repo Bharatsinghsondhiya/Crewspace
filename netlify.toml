@@ -1,0 +1,13 @@
+[build]
+  command = "pnpm run build"
+  publish = "artifacts/workspace-app/dist/public"
+
+[build.environment]
+  # Netlify uses an older Node version by default, enforce a modern one
+  NODE_VERSION = "20"
+  PNPM_FLAGS = "--shamefully-hoist"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
