@@ -233,14 +233,16 @@
     @apply border-border;
   }
 
-  html {
+  html, body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
     background-color: #06030f;
-    overscroll-behavior-y: none;
-    scroll-behavior: smooth;
   }
 
   body {
-    @apply font-sans antialiased text-foreground min-h-[100dvh] relative overflow-x-hidden;
+    @apply font-sans antialiased text-foreground;
     background: linear-gradient(-45deg, #06030f, #130a2e, #0d0520, #1a0b3b, #06030f);
     background-size: 400% 400%;
     animation: gradientBG 20s ease infinite;
