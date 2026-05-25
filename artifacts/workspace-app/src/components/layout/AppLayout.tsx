@@ -20,11 +20,13 @@ import { LayoutDashboard, Briefcase, Bell, Settings, User, Shield, LogOut, ListT
 import { Badge } from "@/components/ui/badge";
 import { useLogout } from "@workspace/api-client-react";
 import { toast } from "sonner";
+import { useSidebar } from "@/components/ui/sidebar";
 
-export function AppLayout({ children }: { children: ReactNode }) {
+function AppLayoutInner({ children }: { children: ReactNode }) {
   const { user, logout: contextLogout } = useAuth();
   const [location] = useLocation();
   const logoutMutation = useLogout();
+  const { setOpenMobile, isMobile } = useSidebar();
 
   const handleLogout = () => {
     logoutMutation.mutate(undefined, {
@@ -35,9 +37,14 @@ export function AppLayout({ children }: { children: ReactNode }) {
     });
   };
 
+  const handleLinkClick = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
+
   return (
-    <SidebarProvider>
-      <div className="flex min-h-screen w-full text-foreground relative overflow-hidden"
+    <div className="flex min-h-[100dvh] w-full text-foreground relative overflow-hidden"
         style={{ background: "linear-gradient(-45deg, #06030f, #130a2e, #0d0520, #1a0b3b, #06030f)", backgroundSize: "400% 400%", animation: "gradientBG 20s ease infinite" }}>
 
         {/* Cosmic purple glow blobs */}
@@ -69,7 +76,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
                   <SidebarMenu className="gap-1">
                     <SidebarMenuItem>
                       <SidebarMenuButton asChild isActive={location === "/dashboard"} className="h-10 rounded-xl data-[active=true]:bg-purple-500/15 data-[active=true]:text-purple-300 data-[active=true]:border-l-2 data-[active=true]:border-purple-400 data-[active=true]:font-semibold text-white/60 hover:text-white hover:bg-purple-500/8 transition-all pl-3">
-                        <Link href="/dashboard">
+                        <Link href="/dashboard" onClick={handleLinkClick}>
                           <LayoutDashboard className="w-4 h-4" />
                           <span className="text-sm">Dashboard</span>
                         </Link>
@@ -77,7 +84,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                       <SidebarMenuButton asChild isActive={location === "/activity"} className="h-10 rounded-xl data-[active=true]:bg-purple-500/15 data-[active=true]:text-purple-300 data-[active=true]:border-l-2 data-[active=true]:border-purple-400 data-[active=true]:font-semibold text-white/60 hover:text-white hover:bg-purple-500/8 transition-all pl-3">
-                        <Link href="/activity">
+                        <Link href="/activity" onClick={handleLinkClick}>
                           <Activity className="w-4 h-4" />
                           <span className="text-sm">Activity</span>
                         </Link>
@@ -93,7 +100,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
                   <SidebarMenu className="gap-1">
                     <SidebarMenuItem>
                       <SidebarMenuButton asChild isActive={location.startsWith("/workspaces") && !location.startsWith("/tasks")} className="h-10 rounded-xl data-[active=true]:bg-purple-500/15 data-[active=true]:text-purple-300 data-[active=true]:border-l-2 data-[active=true]:border-purple-400 data-[active=true]:font-semibold text-white/60 hover:text-white hover:bg-purple-500/8 transition-all pl-3">
-                        <Link href="/workspaces">
+                        <Link href="/workspaces" onClick={handleLinkClick}>
                           <Briefcase className="w-4 h-4" />
                           <span className="text-sm">Workspaces</span>
                         </Link>
@@ -101,7 +108,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                       <SidebarMenuButton asChild isActive={location === "/all-tasks"} className="h-10 rounded-xl data-[active=true]:bg-purple-500/15 data-[active=true]:text-purple-300 data-[active=true]:border-l-2 data-[active=true]:border-purple-400 data-[active=true]:font-semibold text-white/60 hover:text-white hover:bg-purple-500/8 transition-all pl-3">
-                        <Link href="/all-tasks">
+                        <Link href="/all-tasks" onClick={handleLinkClick}>
                           <ListTodo className="w-4 h-4" />
                           <span className="text-sm">All Tasks</span>
                         </Link>
@@ -109,7 +116,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                       <SidebarMenuButton asChild isActive={location === "/my-tasks"} className="h-10 rounded-xl data-[active=true]:bg-purple-500/15 data-[active=true]:text-purple-300 data-[active=true]:border-l-2 data-[active=true]:border-purple-400 data-[active=true]:font-semibold text-white/60 hover:text-white hover:bg-purple-500/8 transition-all pl-3">
-                        <Link href="/my-tasks">
+                        <Link href="/my-tasks" onClick={handleLinkClick}>
                           <ListTodo className="w-4 h-4" />
                           <span className="text-sm">My Tasks</span>
                         </Link>
@@ -125,7 +132,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
                   <SidebarMenu className="gap-1">
                     <SidebarMenuItem>
                       <SidebarMenuButton asChild isActive={location.startsWith("/notifications")} className="h-10 rounded-xl data-[active=true]:bg-purple-500/15 data-[active=true]:text-purple-300 data-[active=true]:border-l-2 data-[active=true]:border-purple-400 data-[active=true]:font-semibold text-white/60 hover:text-white hover:bg-purple-500/8 transition-all pl-3">
-                        <Link href="/notifications">
+                        <Link href="/notifications" onClick={handleLinkClick}>
                           <Bell className="w-4 h-4" />
                           <span className="text-sm">Notifications</span>
                         </Link>
@@ -133,7 +140,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                       <SidebarMenuButton asChild isActive={location === "/settings"} className="h-10 rounded-xl data-[active=true]:bg-purple-500/15 data-[active=true]:text-purple-300 data-[active=true]:border-l-2 data-[active=true]:border-purple-400 data-[active=true]:font-semibold text-white/60 hover:text-white hover:bg-purple-500/8 transition-all pl-3">
-                        <Link href="/settings">
+                        <Link href="/settings" onClick={handleLinkClick}>
                           <Settings className="w-4 h-4" />
                           <span className="text-sm">Settings</span>
                         </Link>
@@ -141,7 +148,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                       <SidebarMenuButton asChild isActive={location === "/profile"} className="h-10 rounded-xl data-[active=true]:bg-purple-500/15 data-[active=true]:text-purple-300 data-[active=true]:border-l-2 data-[active=true]:border-purple-400 data-[active=true]:font-semibold text-white/60 hover:text-white hover:bg-purple-500/8 transition-all pl-3">
-                        <Link href="/profile">
+                        <Link href="/profile" onClick={handleLinkClick}>
                           <User className="w-4 h-4" />
                           <span className="text-sm">Profile</span>
                         </Link>
@@ -150,7 +157,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
                     {user?.role === "admin" && (
                       <SidebarMenuItem>
                         <SidebarMenuButton asChild isActive={location.startsWith("/admin")} className="h-10 rounded-xl data-[active=true]:bg-purple-500/15 data-[active=true]:text-purple-300 data-[active=true]:border-l-2 data-[active=true]:border-purple-400 data-[active=true]:font-semibold text-white/60 hover:text-white hover:bg-purple-500/8 transition-all pl-3">
-                          <Link href="/admin">
+                          <Link href="/admin" onClick={handleLinkClick}>
                             <Shield className="w-4 h-4" />
                             <span className="text-sm">Admin</span>
                           </Link>
@@ -198,13 +205,20 @@ export function AppLayout({ children }: { children: ReactNode }) {
               <SidebarTrigger className="text-purple-400" />
               <div className="ml-4 font-extrabold text-base text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-fuchsia-400">Crewspace</div>
             </header>
-            <div className="flex-1 overflow-auto custom-scrollbar">
+            <div className="flex-1 overflow-auto custom-scrollbar scroll-smooth">
               {children}
             </div>
           </main>
 
         </div>
       </div>
+  );
+}
+
+export function AppLayout({ children }: { children: ReactNode }) {
+  return (
+    <SidebarProvider>
+      <AppLayoutInner>{children}</AppLayoutInner>
     </SidebarProvider>
   );
 }

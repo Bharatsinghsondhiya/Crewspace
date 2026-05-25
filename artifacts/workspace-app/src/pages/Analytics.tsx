@@ -37,7 +37,7 @@ export default function Analytics() {
   if (isLoading) return (
     <div className="p-8 space-y-8 max-w-7xl mx-auto">
       <div className="grid gap-4 md:grid-cols-4">
-        {[1,2,3,4].map(i => <Skeleton key={i} className="h-32 w-full rounded-[2rem] bg-white/5" />)}
+        {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32 w-full rounded-[2rem] bg-white/5" />)}
       </div>
       <div className="grid gap-6 md:grid-cols-2">
         <Skeleton className="h-[400px] w-full rounded-[2rem] bg-white/5" />
@@ -134,19 +134,19 @@ export default function Analytics() {
               <BarChart data={analytics.tasksByMember} margin={{ top: 20, right: 30, left: -20, bottom: 5 }}>
                 <XAxis dataKey="name" stroke="rgba(255,255,255,0.3)" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis stroke="rgba(255,255,255,0.3)" fontSize={12} tickLine={false} axisLine={false} />
-                <RechartsTooltip cursor={{fill: 'rgba(255,255,255,0.05)'}} contentStyle={{ backgroundColor: 'rgba(15,8,35,0.9)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '1rem', color: '#fff' }} itemStyle={{ color: '#fff' }} />
+                <RechartsTooltip cursor={{ fill: 'rgba(255,255,255,0.05)' }} contentStyle={{ backgroundColor: 'rgba(15,8,35,0.9)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '1rem', color: '#fff' }} itemStyle={{ color: '#fff' }} />
                 <Legend iconType="circle" wrapperStyle={{ paddingTop: "20px" }} />
                 <Bar dataKey="completedTasks" name="Completed" fill="url(#colorCompleted)" radius={[6, 6, 0, 0]} />
                 <Bar dataKey="totalTasks" name="Assigned" fill="url(#colorAssigned)" radius={[6, 6, 0, 0]} />
-                
+
                 <defs>
                   <linearGradient id="colorCompleted" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0.2}/>
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0.2} />
                   </linearGradient>
                   <linearGradient id="colorAssigned" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.2}/>
+                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.2} />
                   </linearGradient>
                 </defs>
               </BarChart>
