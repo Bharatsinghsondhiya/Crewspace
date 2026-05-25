@@ -25,7 +25,8 @@ export default function Analytics() {
     queryKey: ["workspaceAnalytics", workspaceId],
     queryFn: async () => {
       const token = localStorage.getItem("accessToken");
-      const res = await fetch(`/api/workspaces/${workspaceId}/analytics`, {
+      const baseUrl = import.meta.env.VITE_API_URL || "";
+      const res = await fetch(`${baseUrl}/api/workspaces/${workspaceId}/analytics`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (!res.ok) throw new Error("Failed to fetch analytics");

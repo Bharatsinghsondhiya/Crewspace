@@ -32,7 +32,8 @@ function InviteModalContent({ workspaceId, members, setInviteOpen }: { workspace
     queryKey: ["users", search],
     queryFn: async () => {
       const token = localStorage.getItem("accessToken");
-      const res = await fetch(`/api/users?query=${encodeURIComponent(search)}`, {
+      const baseUrl = import.meta.env.VITE_API_URL || "";
+      const res = await fetch(`${baseUrl}/api/users?query=${encodeURIComponent(search)}`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (!res.ok) throw new Error("Failed to search users");
