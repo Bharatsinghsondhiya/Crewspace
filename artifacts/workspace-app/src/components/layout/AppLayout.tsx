@@ -44,7 +44,7 @@ function AppLayoutInner({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="flex min-h-[100dvh] w-full text-foreground relative overflow-hidden"
+    <div className="flex h-[100dvh] w-full text-foreground relative overflow-hidden"
         style={{ background: "linear-gradient(-45deg, #06030f, #130a2e, #0d0520, #1a0b3b, #06030f)", backgroundSize: "400% 400%", animation: "gradientBG 20s ease infinite" }}>
 
         {/* Cosmic purple glow blobs */}
@@ -52,7 +52,7 @@ function AppLayoutInner({ children }: { children: ReactNode }) {
         <div className="absolute bottom-[-20%] right-[-10%] w-[70%] h-[70%] bg-gradient-to-tl from-indigo-900/20 via-purple-600/8 to-transparent rounded-full blur-[150px] pointer-events-none z-0" />
 
         {/* Full-screen app shell */}
-        <div className="flex w-full min-h-screen relative z-10">
+        <div className="flex w-full h-full relative z-10">
 
           <Sidebar className="border-r border-purple-500/10 z-40 transition-all duration-500 overflow-hidden"
             style={{ background: "rgba(8, 4, 22, 0.7)", backdropFilter: "blur(32px)" }}>
