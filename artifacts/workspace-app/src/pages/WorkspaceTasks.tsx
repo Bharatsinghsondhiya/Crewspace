@@ -145,132 +145,192 @@ export default function WorkspaceTasks() {
   ];
 
   return (
-    <div className="p-4 md:p-6 md:pt-4 space-y-4 max-w-[1600px] mx-auto min-h-screen md:h-[calc(100vh-1rem)] flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="p-5 md:p-6 space-y-5 max-w-[1600px] mx-auto min-h-screen md:h-[calc(100vh-1rem)] flex flex-col">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between shrink-0 gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Board</h1>
-          <p className="text-muted-foreground mt-2">Manage tasks for this workspace.</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-white">Board</h1>
+          <p className="text-white/45 mt-1 text-sm">Manage tasks for this workspace.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-3">
+          {/* Search */}
+          <div className="relative hidden sm:block">
+            <input
+              type="text"
+              placeholder="Search tasks..."
+              className="w-48 h-9 pl-9 pr-3 rounded-xl text-sm text-white/70 border border-white/10 outline-none focus:border-purple-500/40 transition-all placeholder:text-white/30"
+              style={{ background: "rgba(20,12,45,0.7)" }}
+            />
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+          </div>
+          {/* Settings — links to members/invite/roles page */}
           <Link href={`/workspaces/${workspaceId}`}>
-            <Button variant="outline"><Settings className="w-4 h-4 mr-2" /> Settings</Button>
+            <button
+              className="flex items-center gap-1.5 h-9 px-3 rounded-xl text-sm text-white/60 border border-white/10 hover:text-white hover:border-purple-500/30 transition-all"
+              style={{ background: "rgba(20,12,45,0.7)" }}
+            >
+              <Settings className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Settings</span>
+            </button>
           </Link>
           {isAdmin && (
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
-                <Button><Plus className="w-4 h-4 mr-2" /> New Task</Button>
+                <Button className="bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-500 hover:to-violet-500 text-white border-0 shadow-[0_0_20px_rgba(139,92,246,0.3)] rounded-xl font-semibold h-9">
+                  <Plus className="w-4 h-4 mr-2" /> New Task
+                </Button>
               </DialogTrigger>
-              <DialogContent>
-                <DialogHeader><DialogTitle>Create Task</DialogTitle></DialogHeader>
+              <DialogContent className="w-[95%] sm:max-w-[500px] border-white/10 rounded-3xl p-6 md:p-8" style={{ background: "rgba(15, 8, 35, 0.95)", backdropFilter: "blur(40px)", boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 30px rgba(139, 92, 246, 0.15)" }}>
+                <DialogHeader className="mb-2">
+                  <DialogTitle className="text-xl text-white font-bold tracking-tight">Create Task</DialogTitle>
+                </DialogHeader>
                 <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
-                <FormField control={form.control} name="title" render={({ field }) => (
-                  <FormItem><FormLabel>Title</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
-                )} />
-                <FormField control={form.control} name="description" render={({ field }) => (
-                  <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea {...field} /></FormControl></FormItem>
-                )} />
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField control={form.control} name="priority" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Priority</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                        <SelectContent>
-                          <SelectItem value="low">Low</SelectItem>
-                          <SelectItem value="medium">Medium</SelectItem>
-                          <SelectItem value="high">High</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormItem>
-                  )} />
-                  <FormField control={form.control} name="assigneeId" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Assignee</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value ?? "none"}>
-                        <FormControl><SelectTrigger><SelectValue placeholder="Unassigned" /></SelectTrigger></FormControl>
-                        <SelectContent>
-                          <SelectItem value="none">Unassigned</SelectItem>
-                          {members?.map(m => (
-                            <SelectItem key={m.userId} value={m.userId.toString()}>{m.user.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </FormItem>
-                  )} />
-                </div>
-                <div className="flex justify-end">
-                  <Button type="submit" disabled={createMutation.isPending}>
-                    {createMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                    {createMutation.isPending ? "Creating..." : "Create Task"}
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
-        )}
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+                    <FormField control={form.control} name="title" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-white/70 text-sm font-medium">Task Title</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="Update landing page..." className="bg-white/5 border-white/10 text-white rounded-xl focus-visible:ring-purple-500/50 h-11 px-4 placeholder:text-white/20 transition-all" />
+                        </FormControl>
+                        <FormMessage className="text-red-400 text-xs" />
+                      </FormItem>
+                    )} />
+                    <FormField control={form.control} name="description" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-white/70 text-sm font-medium">Description</FormLabel>
+                        <FormControl>
+                          <Textarea {...field} placeholder="Add details..." className="bg-white/5 border-white/10 text-white rounded-xl focus-visible:ring-purple-500/50 min-h-[100px] p-4 resize-none placeholder:text-white/20 transition-all" />
+                        </FormControl>
+                      </FormItem>
+                    )} />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                      <FormField control={form.control} name="priority" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-white/70 text-sm font-medium">Priority</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="bg-white/5 border-white/10 text-white rounded-xl focus:ring-purple-500/50 h-11">
+                                <SelectValue />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="bg-[#120a28] border-white/10 text-white rounded-xl">
+                              <SelectItem value="low" className="focus:bg-white/10 focus:text-white">Low</SelectItem>
+                              <SelectItem value="medium" className="focus:bg-white/10 focus:text-white">Medium</SelectItem>
+                              <SelectItem value="high" className="focus:bg-white/10 focus:text-white">High</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormItem>
+                      )} />
+                      <FormField control={form.control} name="assigneeId" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-white/70 text-sm font-medium">Assignee</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value ?? "none"}>
+                            <FormControl>
+                              <SelectTrigger className="bg-white/5 border-white/10 text-white rounded-xl focus:ring-purple-500/50 h-11">
+                                <SelectValue placeholder="Unassigned" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="bg-[#120a28] border-white/10 text-white rounded-xl max-h-[200px]">
+                              <SelectItem value="none" className="focus:bg-white/10 focus:text-white">Unassigned</SelectItem>
+                              {members?.map(m => (
+                                <SelectItem key={m.userId} value={m.userId.toString()} className="focus:bg-white/10 focus:text-white">
+                                  {m.user.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </FormItem>
+                      )} />
+                    </div>
+                    <div className="flex justify-end pt-4">
+                      <Button type="submit" disabled={createMutation.isPending}
+                        className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white border-0 rounded-xl shadow-[0_0_15px_rgba(139,92,246,0.4)] h-11 px-8 font-medium transition-all">
+                        {createMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                        {createMutation.isPending ? "Creating..." : "Create Task"}
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 flex flex-col md:flex-row gap-4 lg:gap-6 overflow-x-auto overflow-y-auto md:overflow-hidden pb-2 snap-x [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] mt-4">
-        {columns.map((col, i) => (
-          <div
-            key={col.id}
-            className="flex flex-col w-full md:h-full md:flex-1 md:min-w-0 bg-black/20 backdrop-blur-2xl rounded-[2rem] p-4 lg:p-5 border border-white/10 snap-center shadow-xl relative overflow-hidden min-h-[300px] md:min-h-0"
-            onDrop={(e) => handleDrop(e, col.id)}
-            style={{ animationDelay: `${i * 150}ms` }}
-            onDragOver={handleDragOver}
-          >
-            {/* Subtle priority glow line at the top */}
-            <div className={`absolute top-0 left-0 w-full h-1 ${col.id === 'high' ? 'bg-gradient-to-r from-rose-500/80 to-rose-500/20' : col.id === 'medium' ? 'bg-gradient-to-r from-amber-500/80 to-amber-500/20' : 'bg-gradient-to-r from-emerald-500/80 to-emerald-500/20'}`} />
-            
-            <div className="flex items-center justify-between mb-6 mt-4 font-semibold text-foreground px-1 shrink-0">
-              {col.icon} {col.title}
-              <Badge variant="secondary" className="ml-auto bg-white/10 text-white hover:bg-white/20 border-0">{tasks?.filter(t => t.priority === col.id).length || 0}</Badge>
-            </div>
-            <div className="flex-1 overflow-y-auto space-y-4 pr-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] pb-4 pt-2">
-              {tasks?.filter(t => t.priority === col.id).map(task => (
-                    <div
-                      key={task.id}
+      {/* Kanban Columns */}
+      <div className="flex-1 min-h-0 flex flex-col md:flex-row gap-5 overflow-x-auto overflow-y-auto md:overflow-hidden pb-2">
+        {columns.map((col, i) => {
+          const colTasks = tasks?.filter(t => t.priority === col.id) ?? [];
+          const borderColor = col.id === "high" ? "border-red-500/40" : col.id === "medium" ? "border-orange-500/40" : "border-blue-500/40";
+          const headerColor = col.id === "high" ? "text-red-400" : col.id === "medium" ? "text-orange-400" : "text-blue-400";
+          const topBar = col.id === "high" ? "from-red-500/70 to-red-500/10" : col.id === "medium" ? "from-orange-500/70 to-orange-500/10" : "from-blue-500/70 to-blue-500/10";
+          return (
+            <div key={col.id}
+              className={`flex flex-col w-full md:flex-1 md:min-w-0 rounded-2xl border ${borderColor} relative overflow-hidden min-h-[300px] md:min-h-0`}
+              style={{ background: "rgba(14, 8, 30, 0.8)" }}
+              onDrop={(e) => handleDrop(e, col.id)}
+              onDragOver={handleDragOver}
+            >
+              {/* Top color bar */}
+              <div className={`absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r ${topBar}`} />
+              
+              {/* Column header */}
+              <div className="flex items-center justify-between px-5 pt-5 pb-4 shrink-0">
+                <div className={`flex items-center gap-2 font-semibold text-sm ${headerColor}`}>
+                  {col.icon} {col.title}
+                </div>
+                <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold text-white/60 border border-white/15"
+                  style={{ background: "rgba(255,255,255,0.06)" }}>
+                  {colTasks.length}
+                </span>
+              </div>
+
+              {/* Task cards */}
+              <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-3">
+                {colTasks.length === 0 ? (
+                  <div className="text-center py-10 text-white/20 text-xs">No tasks</div>
+                ) : (
+                  colTasks.map(task => (
+                    <div key={task.id}
                       draggable={isAdmin}
                       onDragStart={(e) => {
-                        if (!isAdmin) {
-                          e.preventDefault();
-                          return;
-                        }
+                        if (!isAdmin) { e.preventDefault(); return; }
                         e.dataTransfer.setData("taskId", task.id.toString());
                       }}
-                      className={`group cursor-${isAdmin ? 'grab active:cursor-grabbing' : 'pointer'} bg-black/40 backdrop-blur-3xl border border-white/10 hover:border-primary/50 p-4 rounded-[1.5rem] shadow-[0_4px_24px_0_rgba(0,0,0,0.4)] transition-all duration-300 hover:shadow-[0_0_20px_rgba(120,119,198,0.3)] hover:-translate-y-1 relative overflow-hidden`}
+                      className={`group cursor-${isAdmin ? "grab active:cursor-grabbing" : "pointer"} rounded-xl border border-white/8 p-4 transition-all hover:border-purple-500/25 hover:-translate-y-0.5`}
+                      style={{ background: "rgba(20, 10, 45, 0.8)" }}
                     >
-                      <Link href={`/tasks/${workspaceId}/${task.id}`} className="block h-full">
-                        <div className="min-h-[100px] flex flex-col justify-between">
-                          <div className="flex items-start gap-3">
-                            <GripVertical className="w-4 h-4 text-white/30 group-hover:text-white/70 transition-colors shrink-0 mt-0.5 -ml-2" />
-                            <div className="min-w-0 flex-1 space-y-4">
-                              <p className="font-medium text-sm leading-tight break-words">{task.title}</p>
-                              <div className="flex items-center justify-between text-xs">
-                                <Badge variant="outline" className={task.status === "completed" ? "text-green-500 border-green-500/20 bg-green-500/10" : "text-slate-500 border-slate-500/20"}>
-                                  {task.status.replace("_", " ")}
-                                </Badge>
-                                {task.assignee && (
-                                  <div className="flex items-center gap-1 text-muted-foreground">
-                                    <div className="w-5 h-5 rounded-full bg-secondary flex items-center justify-center text-[10px] font-medium text-foreground">
-                                      {task.assignee.name.charAt(0).toUpperCase()}
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
+                      <Link href={`/tasks/${workspaceId}/${task.id}`} className="block">
+                        <div className="flex items-start gap-2 mb-3">
+                          <GripVertical className="w-3.5 h-3.5 text-white/20 group-hover:text-white/50 transition-colors shrink-0 mt-0.5" />
+                          <p className="font-medium text-white/90 text-sm leading-snug break-words flex-1">{task.title}</p>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Badge className={`text-[10px] h-5 px-2 border rounded font-medium ${
+                            task.status === "completed"
+                              ? "bg-amber-500/15 text-amber-300 border-amber-500/30"
+                              : task.status === "in_progress"
+                              ? "bg-red-500/15 text-red-300 border-red-500/30"
+                              : "bg-blue-500/15 text-blue-300 border-blue-500/30"
+                          }`}>
+                            {task.status.replace("_", " ")}
+                          </Badge>
+                          {task.assignee && (
+                            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-500 to-violet-700 flex items-center justify-center text-white text-[10px] font-bold shadow-[0_0_8px_rgba(139,92,246,0.4)]">
+                              {task.assignee.name.charAt(0).toUpperCase()}
                             </div>
-                          </div>
+                          )}
                         </div>
                       </Link>
                     </div>
-              ))}
+                  ))
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
+
 }

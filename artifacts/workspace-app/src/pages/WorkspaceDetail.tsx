@@ -60,60 +60,64 @@ function InviteModalContent({ workspaceId, members, setInviteOpen }: { workspace
   };
 
   return (
-    <div className="space-y-4 pt-4">
+    <div className="space-y-5 pt-4">
       <div className="flex flex-col sm:flex-row gap-4 sm:items-end">
-        <div className="space-y-2 flex-1">
-          <Label>Search Users</Label>
+        <div className="space-y-2 flex-1 min-w-0">
+          <Label className="text-white/70">Search Users</Label>
           <Input 
             placeholder="Search by name or email..." 
             value={search} 
-            onChange={(e) => setSearch(e.target.value)} 
+            onChange={(e) => setSearch(e.target.value)}
+            className="bg-white/5 border-white/10 text-white rounded-xl focus-visible:ring-purple-500/50"
           />
         </div>
-        <div className="space-y-2 w-full sm:w-[150px]">
-          <Label>Role</Label>
+        <div className="space-y-2 w-full sm:w-[150px] shrink-0">
+          <Label className="text-white/70">Role</Label>
           <Select value={role} onValueChange={setRole}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="manager">Manager</SelectItem>
-              <SelectItem value="member">Member</SelectItem>
-              <SelectItem value="viewer">Viewer</SelectItem>
+            <SelectTrigger className="bg-white/5 border-white/10 text-white rounded-xl focus:ring-purple-500/50"><SelectValue /></SelectTrigger>
+            <SelectContent className="bg-[#0a0518] border-white/10 text-white">
+              <SelectItem value="manager" className="focus:bg-white/10 focus:text-white">Manager</SelectItem>
+              <SelectItem value="member" className="focus:bg-white/10 focus:text-white">Member</SelectItem>
+              <SelectItem value="viewer" className="focus:bg-white/10 focus:text-white">Viewer</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
 
-      <div className="mt-4 border rounded-md p-2 h-[250px] overflow-y-auto bg-muted/20">
-        <h4 className="text-sm font-medium text-muted-foreground mb-2">Platform Users</h4>
+      <div className="mt-4 border border-white/10 rounded-xl p-3 h-[250px] overflow-y-auto bg-black/40 backdrop-blur-xl custom-scrollbar">
+        <h4 className="text-sm font-medium text-white/50 mb-3 px-1">Platform Users</h4>
         {isLoading ? (
-          <div className="flex justify-center p-4"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>
+          <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-purple-400" /></div>
         ) : isError ? (
-          <div className="text-center p-4 text-sm text-destructive">Error loading users. Backend might be restarting.</div>
+          <div className="text-center p-4 text-sm text-red-400 bg-red-500/10 rounded-lg">Error loading users. Backend might be restarting.</div>
         ) : (!users || users.length === 0) ? (
-          <div className="text-center p-4 text-sm text-muted-foreground">User not found on platform</div>
+          <div className="text-center p-8 text-sm text-white/30 border border-white/5 border-dashed rounded-lg">User not found on platform</div>
         ) : (
           <div className="space-y-2">
             {users.map((u: any) => {
               const isMember = members.some((m: any) => m.userId === u.id);
               return (
-                <div key={u.id} className="flex items-center justify-between p-2 rounded-md hover:bg-muted/50 border border-transparent hover:border-border transition-colors">
-                  <div>
-                    <div className="font-medium text-sm">{u.name}</div>
-                    <div className="text-xs text-muted-foreground">{u.email}</div>
+                <div key={u.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-transparent hover:border-white/10 transition-all">
+                  <div className="min-w-0">
+                    <div className="font-medium text-sm text-white truncate">{u.name}</div>
+                    <div className="text-xs text-white/50 truncate">{u.email}</div>
                   </div>
-                  {isMember ? (
-                    <Badge variant="secondary">Already in workspace</Badge>
-                  ) : (
-                    <Button 
-                      size="sm" 
-                      onClick={() => onInvite(u.email)}
-                      disabled={inviteMutation.isPending}
-                    >
-                      {invitingEmail === u.email ? (
-                        <><Loader2 className="w-3 h-3 mr-2 animate-spin" /> Inviting...</>
-                      ) : "Invite"}
-                    </Button>
-                  )}
+                  <div className="shrink-0 flex justify-end">
+                    {isMember ? (
+                      <Badge variant="outline" className="border-white/10 text-white/40 bg-white/5 whitespace-nowrap">Already in workspace</Badge>
+                    ) : (
+                      <Button 
+                        size="sm" 
+                        onClick={() => onInvite(u.email)}
+                        disabled={inviteMutation.isPending}
+                        className="bg-purple-600 hover:bg-purple-500 text-white rounded-lg shadow-[0_0_10px_rgba(168,85,247,0.3)] w-full sm:w-auto"
+                      >
+                        {invitingEmail === u.email ? (
+                          <><Loader2 className="w-3 h-3 mr-2 animate-spin" /> Inviting...</>
+                        ) : "Invite"}
+                      </Button>
+                    )}
+                  </div>
                 </div>
               );
             })}
@@ -225,103 +229,116 @@ export default function WorkspaceDetail() {
   const isManagerOrOwner = currentMember?.role === "owner" || currentMember?.role === "manager" || workspace.ownerId === user?.id || user?.role === "admin";
 
   return (
-    <div className="p-4 md:p-8 space-y-8 max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="p-5 md:p-8 space-y-8 max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight break-words">{workspace.name}</h1>
-          <p className="text-muted-foreground mt-2 break-words">{workspace.description || "No description"}</p>
+        <div className="min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white break-words">{workspace.name}</h1>
+          <p className="text-white/50 mt-2 break-words">{workspace.description || "No description provided."}</p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-3 shrink-0">
           <Link href={`/analytics/${id}`}>
-            <Button variant="outline">
-              <BarChart className="mr-2 h-4 w-4" /> Analytics
+            <Button variant="outline" className="bg-white/5 border-white/10 text-white hover:bg-white/10 hover:text-white rounded-xl">
+              <BarChart className="mr-2 h-4 w-4 text-purple-400" /> Analytics
             </Button>
           </Link>
           <Link href={`/workspaces/${id}/tasks`}>
-            <Button>View Tasks</Button>
+            <Button className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl shadow-[0_0_15px_rgba(139,92,246,0.4)]">
+              View Tasks
+            </Button>
           </Link>
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="bg-card border-border hover:border-primary/50 transition-all duration-500 min-w-0">
-          <CardHeader>
-            <CardTitle>Overview</CardTitle>
+      <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-4">
+        <Card className="bg-black/40 backdrop-blur-3xl border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] rounded-[2rem] hover:bg-white/[0.02] transition-colors relative overflow-hidden group min-w-0 md:col-span-1">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl group-hover:bg-purple-500/20 transition-all pointer-events-none" />
+          <CardHeader className="pb-4 border-b border-white/5">
+            <CardTitle className="text-white text-xl">Overview</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex justify-between items-center py-2 border-b border-border">
-              <span className="text-muted-foreground">Members</span>
-              <span className="font-medium">{workspace.memberCount || members?.length || 0}</span>
+          <CardContent className="space-y-2 pt-6">
+            <div className="flex justify-between items-center py-3 border-b border-white/5">
+              <span className="text-white/50 text-sm font-medium">Members</span>
+              <span className="font-bold text-white text-lg">{workspace.memberCount || members?.length || 0}</span>
             </div>
-            <div className="flex justify-between items-center py-2 border-b border-border">
-              <span className="text-muted-foreground">Tasks</span>
-              <span className="font-medium">{workspace.taskCount || 0}</span>
+            <div className="flex justify-between items-center py-3 border-b border-white/5">
+              <span className="text-white/50 text-sm font-medium">Tasks</span>
+              <span className="font-bold text-white text-lg">{workspace.taskCount || 0}</span>
             </div>
-            <div className="flex justify-between items-center py-2">
-              <span className="text-muted-foreground">Created</span>
-              <span className="font-medium">{format(new Date(workspace.createdAt), "MMM d, yyyy")}</span>
+            <div className="flex justify-between items-center py-3">
+              <span className="text-white/50 text-sm font-medium">Created</span>
+              <span className="font-semibold text-white/90 text-sm">{format(new Date(workspace.createdAt), "MMM d, yyyy")}</span>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-card border-border lg:col-span-2 hover:border-primary/50 transition-all duration-500 delay-100 min-w-0">
-          <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 items-start">
+        <Card className="bg-black/40 backdrop-blur-3xl border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] rounded-[2rem] md:col-span-2 lg:col-span-3 hover:bg-white/[0.02] transition-colors relative overflow-hidden group min-w-0 flex flex-col">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-500/10 rounded-full blur-3xl group-hover:bg-indigo-500/20 transition-all pointer-events-none" />
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 items-start pb-4 border-b border-white/5">
             <div className="space-y-1">
-              <CardTitle>Members</CardTitle>
-              <CardDescription>People with access to this workspace</CardDescription>
+              <CardTitle className="text-white">Members</CardTitle>
+              <CardDescription className="text-white/40">People with access to this workspace</CardDescription>
             </div>
             {isManagerOrOwner && (
               <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
                 <DialogTrigger asChild>
-                  <Button size="sm"><Plus className="mr-2 h-4 w-4" /> Invite</Button>
+                  <Button size="sm" className="bg-purple-600 hover:bg-purple-500 text-white rounded-xl shadow-[0_0_15px_rgba(168,85,247,0.4)] w-full sm:w-auto"><Plus className="mr-2 h-4 w-4" /> Invite</Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="bg-[#0a0518] border-white/10 text-white rounded-2xl shadow-2xl sm:max-w-md w-[95%]">
                   <DialogHeader>
-                    <DialogTitle>Invite Member</DialogTitle>
+                    <DialogTitle className="text-xl">Invite Member</DialogTitle>
                   </DialogHeader>
                   <InviteModalContent workspaceId={id} members={members || []} setInviteOpen={setInviteOpen} />
                 </DialogContent>
               </Dialog>
             )}
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0 flex-1 overflow-hidden flex flex-col">
             {membersLoading ? (
-              <div className="flex justify-center p-8">
-                <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+              <div className="flex justify-center items-center p-12 flex-1">
+                <Loader2 className="w-8 h-8 animate-spin text-purple-400" />
               </div>
             ) : (
-              <div className="rounded-md border border-border overflow-x-auto">
-                <Table className="min-w-[500px]">
+              <div className="overflow-x-auto custom-scrollbar flex-1">
+                <Table className="min-w-[600px] w-full">
                   <TableHeader>
-                    <TableRow>
-                      <TableHead>User</TableHead>
-                      <TableHead>Role</TableHead>
-                      {isManagerOrOwner && <TableHead className="w-[50px]"></TableHead>}
+                    <TableRow className="border-white/5 hover:bg-transparent">
+                      <TableHead className="text-white/40 font-semibold uppercase tracking-wider text-xs px-6 py-4">User</TableHead>
+                      <TableHead className="text-white/40 font-semibold uppercase tracking-wider text-xs px-6 py-4">Role</TableHead>
+                      {isManagerOrOwner && <TableHead className="w-[80px] px-6 py-4"></TableHead>}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {members?.map(member => (
-                      <TableRow key={member.userId}>
-                        <TableCell>
-                          <div className="font-medium">{member.user.name}</div>
-                          <div className="text-xs text-muted-foreground">{member.user.email}</div>
+                      <TableRow key={member.userId} className="border-white/5 hover:bg-white/[0.02] transition-colors">
+                        <TableCell className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500/20 to-indigo-500/20 border border-purple-500/30 flex items-center justify-center shrink-0">
+                              <span className="text-sm font-bold text-purple-300">
+                                {member.user.name?.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                            <div className="min-w-0">
+                              <div className="font-semibold text-white truncate text-base">{member.user.name}</div>
+                              <div className="text-sm text-white/40 truncate mt-0.5">{member.user.email}</div>
+                            </div>
+                          </div>
                         </TableCell>
-                        <TableCell>
-                          <Badge variant={member.role === "owner" || member.role === "manager" ? "default" : "secondary"}>
+                        <TableCell className="px-6 py-4">
+                          <Badge variant={member.role === "owner" || member.role === "manager" ? "default" : "secondary"} className={member.role === "owner" ? "bg-purple-500/20 text-purple-300 border-purple-500/30" : member.role === "manager" ? "bg-indigo-500/20 text-indigo-300 border-indigo-500/30" : "bg-white/5 text-white/60 border-white/10"}>
                             {member.role === "owner" || member.role === "manager" ? <ShieldAlert className="w-3 h-3 mr-1" /> : <Shield className="w-3 h-3 mr-1" />}
                             {member.role}
                           </Badge>
                         </TableCell>
                         {isManagerOrOwner && (
-                          <TableCell>
+                          <TableCell className="px-6 py-4 text-right">
                             {member.userId !== user?.id && member.role !== "owner" && (
                               <DropdownMenu>
-                                <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="w-4 h-4" /></Button></DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem onClick={() => onUpdateRole(member.userId, member.role === "manager" ? "member" : "manager")}>
+                                <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="text-white/40 hover:text-white hover:bg-white/10 rounded-xl h-8 w-8"><MoreHorizontal className="w-5 h-5" /></Button></DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="bg-[#0a0518] border-white/10 text-white rounded-xl shadow-2xl min-w-[160px] p-1.5">
+                                  <DropdownMenuItem className="hover:bg-white/10 focus:bg-white/10 focus:text-white cursor-pointer rounded-lg py-2" onClick={() => onUpdateRole(member.userId, member.role === "manager" ? "member" : "manager")}>
                                     Make {member.role === "manager" ? "Member" : "Manager"}
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => onRemove(member.userId)} className="text-destructive">
+                                  <DropdownMenuItem className="text-red-400 hover:bg-red-500/10 focus:bg-red-500/10 focus:text-red-400 cursor-pointer rounded-lg py-2 mt-1" onClick={() => onRemove(member.userId)}>
                                     <Trash className="w-4 h-4 mr-2" /> Remove
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>

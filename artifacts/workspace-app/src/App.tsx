@@ -24,6 +24,9 @@ import Admin from "@/pages/Admin";
 import Profile from "@/pages/Profile";
 import Settings from "@/pages/Settings";
 import AcceptInvite from "@/pages/AcceptInvite";
+import MyTasks from "@/pages/MyTasks";
+import Activity from "@/pages/Activity";
+import AllTasks from "@/pages/AllTasks";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +49,15 @@ function Router() {
       {/* App Routes */}
       <Route path="/dashboard">
         <ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>
+      </Route>
+      <Route path="/my-tasks">
+        <ProtectedRoute><AppLayout><MyTasks /></AppLayout></ProtectedRoute>
+      </Route>
+      <Route path="/activity">
+        <ProtectedRoute><AppLayout><Activity /></AppLayout></ProtectedRoute>
+      </Route>
+      <Route path="/all-tasks">
+        <ProtectedRoute><AppLayout><AllTasks /></AppLayout></ProtectedRoute>
       </Route>
       <Route path="/workspaces">
         <ProtectedRoute><AppLayout><Workspaces /></AppLayout></ProtectedRoute>

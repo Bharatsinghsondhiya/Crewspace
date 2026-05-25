@@ -1,119 +1,26 @@
 import { useAuth } from "@/context/AuthContext";
-import { useListWorkspaces, useGetDashboardSummary, useGetAdminStats } from "@workspace/api-client-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { useGetDashboardSummary, useGetAdminStats } from "@workspace/api-client-react";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Circle, Clock, Layout, Shield, Users, Briefcase, BarChart3, ArrowRight, Loader2 } from "lucide-react";
+import { CheckCircle2, Circle, Layout, Shield, Users, Briefcase, BarChart3, Bell, Loader2, AlertCircle, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "wouter";
 
-function AdminDashboard() {
-  const { data: summary, isLoading: summaryLoading } = useGetDashboardSummary();
-  const { data: stats, isLoading: statsLoading } = useGetAdminStats();
-  const isLoading = summaryLoading || statsLoading;
-
+// Colored icon box matching the screenshot
+function StatCard({ label, value, sub, icon: Icon, iconBg, iconColor }: {
+  label: string; value: number | string; sub: string;
+  icon: any; iconBg: string; iconColor: string;
+}) {
   return (
-    <div className="p-4 md:p-8 space-y-8 max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex flex-wrap items-center gap-3 mb-1">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Admin Dashboard</h1>
-            <Badge className="bg-violet-600 hover:bg-violet-600 text-white gap-1 shrink-0">
-              <Shield className="h-3 w-3" /> Admin
-            </Badge>
-          </div>
-          <p className="text-muted-foreground mt-1">Here is what's happening across the platform today.</p>
-        </div>
-        <Button asChild variant="outline" className="border-violet-500 text-violet-400 hover:bg-violet-500/10">
-          <Link href="/admin">
-            <Shield className="mr-2 h-4 w-4" />
-            Manage Users
-          </Link>
-        </Button>
+    <div className="rounded-2xl p-5 flex flex-col gap-3 border border-white/8 transition-all hover:-translate-y-0.5 hover:border-purple-500/20"
+      style={{ background: "rgba(20, 12, 45, 0.7)" }}>
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${iconBg}`}>
+        <Icon className={`w-5 h-5 ${iconColor}`} />
       </div>
-
-      {isLoading ? (
-        <div className="flex-1 flex items-center justify-center min-h-[40vh] animate-in fade-in duration-700">
-          <div className="flex flex-col items-center gap-4">
-            <Loader2 className="w-10 h-10 animate-spin text-primary" />
-            <p className="text-muted-foreground font-medium animate-pulse">Loading dashboard...</p>
-          </div>
-        </div>
-      ) : (
-        <>
-          {/* Platform stats */}
-          <div>
-            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Platform Overview</h2>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              <Card className="bg-black/40 backdrop-blur-3xl border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] rounded-2xl sm:rounded-[2rem] hover:shadow-[0_8px_32px_0_rgba(120,119,198,0.2)] hover:-translate-y-1 transition-all duration-300">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Total Users</CardTitle>
-                  <Users className="h-4 w-4 text-violet-400" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats?.totalUsers ?? "—"}</div>
-                  <p className="text-xs text-muted-foreground mt-1">{stats?.activeUsers ?? 0} active</p>
-                </CardContent>
-              </Card>
-              <Card className="bg-black/40 backdrop-blur-3xl border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] rounded-2xl sm:rounded-[2rem] hover:shadow-[0_8px_32px_0_rgba(120,119,198,0.2)] hover:-translate-y-1 transition-all duration-300">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Workspaces</CardTitle>
-                  <Briefcase className="h-4 w-4 text-violet-400" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats?.totalWorkspaces ?? "—"}</div>
-                </CardContent>
-              </Card>
-              <Card className="bg-black/40 backdrop-blur-3xl border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] rounded-2xl sm:rounded-[2rem] hover:shadow-[0_8px_32px_0_rgba(120,119,198,0.2)] hover:-translate-y-1 transition-all duration-300">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Total Tasks</CardTitle>
-                  <BarChart3 className="h-4 w-4 text-violet-400" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats?.totalTasks ?? "—"}</div>
-                  <p className="text-xs text-muted-foreground mt-1">{stats?.completedTasks ?? 0} completed</p>
-                </CardContent>
-              </Card>
-              <Card className="bg-black/40 backdrop-blur-3xl border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] rounded-2xl sm:rounded-[2rem] hover:shadow-[0_8px_32px_0_rgba(120,119,198,0.2)] hover:-translate-y-1 transition-all duration-300">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">My Workspaces</CardTitle>
-                  <Layout className="h-4 w-4 text-violet-400" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{summary?.totalWorkspaces ?? "—"}</div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-
-          {/* Role breakdown */}
-          {stats && (
-            <div>
-              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">User Roles</h2>
-              <div className="grid gap-4 md:grid-cols-2">
-                {stats.usersByRole.map((r: { label: string; count: number }) => (
-                  <Card key={r.label} className="bg-black/40 backdrop-blur-3xl border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] rounded-2xl sm:rounded-[2rem] hover:border-primary/50 transition-all duration-300">
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                      <CardTitle className="text-sm font-medium text-muted-foreground capitalize">{r.label}s</CardTitle>
-                      {r.label === "admin" ? (
-                        <Shield className="h-4 w-4 text-violet-400" />
-                      ) : (
-                        <Users className="h-4 w-4 text-blue-400" />
-                      )}
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">{r.count}</div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Recent activity */}
-          <ActivityFeed activities={summary?.recentActivity ?? []} />
-        </>
-      )}
+      <div>
+        <div className="text-2xl font-bold text-white">{value}</div>
+        <div className="text-sm text-white/50 mt-0.5">{label}</div>
+        <div className="text-xs text-white/35 mt-1">{sub}</div>
+      </div>
     </div>
   );
 }
@@ -123,116 +30,205 @@ function MemberDashboard() {
   const { data: summary, isLoading } = useGetDashboardSummary();
 
   return (
-    <div className="p-4 md:p-8 space-y-8 max-w-7xl mx-auto">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex flex-wrap items-center gap-3 mb-1">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Welcome back, {user?.name}</h1>
-            <Badge className="bg-blue-600 hover:bg-blue-600 text-white gap-1 shrink-0">
-              <Users className="h-3 w-3" /> Member
-            </Badge>
-          </div>
-          <p className="text-muted-foreground mt-1">Here is what's happening across your workspaces today.</p>
+    <div className="p-5 md:p-7 space-y-6 max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-2xl md:text-3xl font-bold text-white break-words">
+            Welcome back, {user?.name} 👋
+          </h1>
+          <p className="text-white/45 mt-1 text-sm">Here's what's happening across your workspaces today.</p>
         </div>
-        <Button asChild variant="outline">
-          <Link href="/workspaces">
-            <Briefcase className="mr-2 h-4 w-4" />
-            My Workspaces
-            <ArrowRight className="ml-2 h-4 w-4" />
+        <div className="flex items-center gap-3 shrink-0 mt-1">
+          <Link href="/notifications">
+            <button className="relative w-9 h-9 rounded-full flex items-center justify-center border border-white/10 hover:border-purple-500/30 transition-all"
+              style={{ background: "rgba(20,12,45,0.7)" }}>
+              <Bell className="w-4 h-4 text-white/70" />
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center font-bold">!</span>
+            </button>
           </Link>
-        </Button>
+          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-violet-700 flex items-center justify-center text-white font-bold text-sm shadow-[0_0_12px_rgba(139,92,246,0.4)]">
+            {user?.name?.charAt(0).toUpperCase()}
+          </div>
+        </div>
       </div>
 
       {isLoading || !summary ? (
-        <div className="flex-1 flex items-center justify-center min-h-[40vh] animate-in fade-in duration-700">
+        <div className="flex items-center justify-center min-h-[40vh]">
           <div className="flex flex-col items-center gap-4">
-            <Loader2 className="w-10 h-10 animate-spin text-primary" />
-            <p className="text-muted-foreground font-medium animate-pulse">Loading dashboard...</p>
+            <Loader2 className="w-10 h-10 animate-spin text-purple-400" />
+            <p className="text-white/50 text-sm animate-pulse">Loading dashboard...</p>
           </div>
         </div>
       ) : (
         <>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card className="bg-black/40 backdrop-blur-3xl border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] rounded-2xl sm:rounded-[2rem] hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">My Tasks</CardTitle>
-                <Layout className="h-4 w-4 text-primary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{summary.myTasks}</div>
-                <p className="text-xs text-muted-foreground mt-1">assigned to me</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-black/40 backdrop-blur-3xl border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] rounded-2xl sm:rounded-[2rem] hover:border-yellow-500/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-yellow-500/10">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Pending</CardTitle>
-                <Circle className="h-4 w-4 text-yellow-400" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{summary.myPendingTasks}</div>
-                <p className="text-xs text-muted-foreground mt-1">to be done</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-black/40 backdrop-blur-3xl border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] rounded-2xl sm:rounded-[2rem] hover:border-green-500/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-green-500/10">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Completed</CardTitle>
-                <CheckCircle2 className="h-4 w-4 text-green-400" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{summary.myCompletedTasks}</div>
-                <p className="text-xs text-muted-foreground mt-1">tasks done</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-black/40 backdrop-blur-3xl border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] rounded-2xl sm:rounded-[2rem] hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Workspaces</CardTitle>
-                <Clock className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{summary.totalWorkspaces}</div>
-                <p className="text-xs text-muted-foreground mt-1">joined</p>
-              </CardContent>
-            </Card>
+          {/* Stat Cards */}
+          <div>
+            <p className="text-xs font-semibold text-white/30 uppercase tracking-widest mb-3">Overview</p>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <StatCard label="My Tasks" value={summary.myTasks} sub="Assigned to me" icon={Layout}
+                iconBg="bg-pink-500/20" iconColor="text-pink-400" />
+              <StatCard label="Pending" value={summary.myPendingTasks} sub="To be done" icon={Clock}
+                iconBg="bg-orange-500/20" iconColor="text-orange-400" />
+              <StatCard label="Completed" value={summary.myCompletedTasks} sub="Tasks done" icon={CheckCircle2}
+                iconBg="bg-emerald-500/20" iconColor="text-emerald-400" />
+              <StatCard label="Workspaces" value={summary.totalWorkspaces} sub="Joined" icon={Briefcase}
+                iconBg="bg-blue-500/20" iconColor="text-blue-400" />
+            </div>
           </div>
 
-          <ActivityFeed activities={summary.recentActivity} />
+          {/* Two column lower section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {/* Task Overview */}
+            <div className="rounded-2xl border border-white/8 p-5" style={{ background: "rgba(20, 12, 45, 0.7)" }}>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-semibold text-white">Task Overview</h2>
+                <Link href="/workspaces" className="text-xs text-purple-400 hover:text-purple-300">View all</Link>
+              </div>
+              <div className="space-y-3">
+                {/* High Priority */}
+                <div className="rounded-xl p-3 border border-red-500/20" style={{ background: "rgba(239,68,68,0.06)" }}>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2 text-red-400 font-medium text-sm">
+                      <AlertCircle className="w-4 h-4" /> High Priority
+                    </div>
+                    <span className="text-xs text-white/40">{summary.tasksByPriority?.high ?? 0}</span>
+                  </div>
+                  {summary.recentActivity?.slice(0, 1).map((a: any) => (
+                    <div key={a.id} className="flex items-center justify-between">
+                      <p className="text-xs text-white/70 truncate flex-1">{a.description}</p>
+                      <div className="flex items-center gap-2 ml-2">
+                        <Badge className="text-[10px] h-4 px-1.5 bg-red-500/20 text-red-300 border-red-500/30 border rounded">In Progress</Badge>
+                        <div className="w-5 h-5 rounded-full bg-purple-600 flex items-center justify-center text-white text-[9px] font-bold shrink-0">
+                          {a.user?.name?.charAt(0)?.toUpperCase() ?? "B"}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {/* Medium Priority */}
+                <div className="rounded-xl p-3 border border-orange-500/20" style={{ background: "rgba(249,115,22,0.06)" }}>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2 text-orange-400 font-medium text-sm">
+                      <Circle className="w-4 h-4" /> Medium Priority
+                    </div>
+                    <span className="text-xs text-white/40">{summary.tasksByPriority?.medium ?? 0}</span>
+                  </div>
+                  {summary.recentActivity?.slice(1, 2).map((a: any) => (
+                    <div key={a.id} className="flex items-center justify-between">
+                      <p className="text-xs text-white/70 truncate flex-1">{a.description}</p>
+                      <div className="flex items-center gap-2 ml-2">
+                        <Badge className="text-[10px] h-4 px-1.5 bg-amber-500/20 text-amber-300 border-amber-500/30 border rounded">Pending</Badge>
+                        <div className="w-5 h-5 rounded-full bg-purple-600 flex items-center justify-center text-white text-[9px] font-bold shrink-0">
+                          {a.user?.name?.charAt(0)?.toUpperCase() ?? "B"}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {/* Low Priority */}
+                <div className="rounded-xl p-3 border border-blue-500/20" style={{ background: "rgba(59,130,246,0.06)" }}>
+                  <div className="flex items-center gap-2 text-blue-400 font-medium text-sm">
+                    <CheckCircle2 className="w-4 h-4" /> Low Priority
+                    <span className="ml-auto text-xs text-white/40">{summary.tasksByPriority?.low ?? 0}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Recent Activity */}
+            <div className="rounded-2xl border border-white/8 p-5" style={{ background: "rgba(20, 12, 45, 0.7)" }}>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-semibold text-white">Recent Activity</h2>
+                <Link href="/notifications" className="text-xs text-purple-400 hover:text-purple-300">View all</Link>
+              </div>
+              <div className="space-y-3">
+                {summary.recentActivity?.length === 0 ? (
+                  <p className="text-white/40 text-sm text-center py-8">No recent activity</p>
+                ) : (
+                  summary.recentActivity?.slice(0, 5).map((activity: any) => (
+                    <div key={activity.id} className="flex items-start gap-3">
+                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-violet-700 flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-[0_0_8px_rgba(139,92,246,0.3)]">
+                        {activity.user?.name?.charAt(0)?.toUpperCase() ?? "U"}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-white/80 leading-relaxed">
+                          <span className="font-semibold text-white">{activity.user?.name}</span>{" "}
+                          <span className="text-white/50">{activity.action}</span>{" "}
+                          {activity.description && <span className="text-white/70">'{activity.description}'</span>}
+                        </p>
+                        <p className="text-[10px] text-white/30 mt-0.5">
+                          {format(new Date(activity.createdAt), "MMM d, yyyy h:mm a")}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
         </>
       )}
     </div>
   );
 }
 
-function ActivityFeed({ activities }: { activities: any[] }) {
+function AdminDashboard() {
+  const { data: summary, isLoading: summaryLoading } = useGetDashboardSummary();
+  const { data: stats, isLoading: statsLoading } = useGetAdminStats();
+  const isLoading = summaryLoading || statsLoading;
+
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
-      <h2 className="text-xl font-bold mb-4">Recent Activity</h2>
-      <Card className="bg-card border-border hover:border-primary/50 transition-all duration-300">
-        <CardContent className="p-0">
-          {activities.length === 0 ? (
-            <div className="p-8 text-center text-muted-foreground">No recent activity</div>
-          ) : (
-            <div className="divide-y divide-border">
-              {activities.map((activity) => (
-                <div key={activity.id} className="p-4 flex items-start gap-4">
-                  <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center shrink-0 text-sm font-medium">
-                    {activity.user?.name.charAt(0).toUpperCase()}
+    <div className="p-5 md:p-7 space-y-6 max-w-7xl mx-auto">
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-3 mb-1">
+            <h1 className="text-2xl md:text-3xl font-bold text-white">Admin Dashboard</h1>
+            <Badge className="bg-violet-600 hover:bg-violet-600 text-white gap-1 text-xs">
+              <Shield className="h-3 w-3" /> Admin
+            </Badge>
+          </div>
+          <p className="text-white/45 text-sm">Here's what's happening across the platform today.</p>
+        </div>
+      </div>
+      {isLoading ? (
+        <div className="flex items-center justify-center min-h-[40vh]">
+          <Loader2 className="w-10 h-10 animate-spin text-purple-400" />
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <StatCard label="Total Users" value={stats?.totalUsers ?? "—"} sub={`${stats?.activeUsers ?? 0} active`} icon={Users} iconBg="bg-pink-500/20" iconColor="text-pink-400" />
+            <StatCard label="Workspaces" value={stats?.totalWorkspaces ?? "—"} sub="Total created" icon={Briefcase} iconBg="bg-orange-500/20" iconColor="text-orange-400" />
+            <StatCard label="Total Tasks" value={stats?.totalTasks ?? "—"} sub={`${stats?.completedTasks ?? 0} completed`} icon={BarChart3} iconBg="bg-emerald-500/20" iconColor="text-emerald-400" />
+            <StatCard label="My Workspaces" value={summary?.totalWorkspaces ?? "—"} sub="Joined" icon={Layout} iconBg="bg-blue-500/20" iconColor="text-blue-400" />
+          </div>
+          {summary && (
+            <div className="rounded-2xl border border-white/8 p-5" style={{ background: "rgba(20, 12, 45, 0.7)" }}>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-semibold text-white">Recent Activity</h2>
+              </div>
+              <div className="space-y-3">
+                {summary.recentActivity?.slice(0, 6).map((activity: any) => (
+                  <div key={activity.id} className="flex items-start gap-3">
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-violet-700 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                      {activity.user?.name?.charAt(0)?.toUpperCase() ?? "U"}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-white/80">
+                        <span className="font-semibold text-white">{activity.user?.name}</span>{" "}
+                        <span className="text-white/50">{activity.action}</span>{" "}
+                        {activity.description && <span className="text-white/70">'{activity.description}'</span>}
+                      </p>
+                      <p className="text-[10px] text-white/30 mt-0.5">{format(new Date(activity.createdAt), "MMM d, yyyy h:mm a")}</p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">
-                      <span className="text-foreground">{activity.user?.name}</span>{" "}
-                      <span className="text-muted-foreground">{activity.action}</span>{" "}
-                      {activity.description && <span className="text-foreground">{activity.description}</span>}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {format(new Date(activity.createdAt), "MMM d, yyyy h:mm a")}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </>
+      )}
     </div>
   );
 }

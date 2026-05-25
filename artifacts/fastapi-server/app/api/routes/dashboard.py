@@ -58,3 +58,54 @@ async def get_dashboard_summary(current_user: User = Depends(get_current_user), 
         my_completed_tasks=my_completed_count or 0,
         recent_activity=activities
     )
+
+from typing import List
+from app.schemas import TaskResponseItem, ActivityLogResponseItem
+
+@router.get("/my-tasks", response_model=List[TaskResponseItem])
+async def get_my_tasks(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    stmt = (
+        select(Task)
+        .options(selectinload(Task.assignee), selectinload(Task.created_by))
+        .where(Task.assignee_id == current_user.id)
+        .order_by(Task.created_at.desc())
+    )
+    result = await db.execute(stmt)
+    return result.scalars().all()
+
+@router.get("/all-tasks", response_model=List[TaskResponseItem])
+async def get_all_tasks(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    stmt = (
+        select(Task)
+        .options(selectinload(Task.assignee), selectinload(Task.created_by))
+        .where(
+            or_(
+                Task.created_by_id == current_user.id,
+                Task.workspace_id.in_(
+                    select(WorkspaceMember.workspace_id).where(WorkspaceMember.user_id == current_user.id)
+                )
+            )
+        )
+        .order_by(Task.created_at.desc())
+    )
+    result = await db.execute(stmt)
+    return result.scalars().all()
+
+@router.get("/activity", response_model=List[ActivityLogResponseItem])
+async def get_my_activity(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    stmt = (
+        select(ActivityLog)
+        .options(selectinload(ActivityLog.user))
+        .where(
+            or_(
+                ActivityLog.user_id == current_user.id,
+                ActivityLog.workspace_id.in_(
+                    select(WorkspaceMember.workspace_id).where(WorkspaceMember.user_id == current_user.id)
+                )
+            )
+        )
+        .order_by(ActivityLog.created_at.desc())
+        .limit(50)
+    )
+    result = await db.execute(stmt)
+    return result.scalars().all()

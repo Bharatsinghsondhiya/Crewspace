@@ -1,97 +1,131 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useState, useEffect } from "react";
+import { Settings as SettingsIcon, BellRing, Shield, LayoutDashboard } from "lucide-react";
 
 export default function Settings() {
-  const [theme, setTheme] = useState<"light" | "dark">("dark");
-  
+  const [emailNotifs, setEmailNotifs] = useState(true);
+  const [inAppMentions, setInAppMentions] = useState(true);
+  const [marketing, setMarketing] = useState(false);
+  const [compactMode, setCompactMode] = useState(false);
+
+  // Load from localStorage
   useEffect(() => {
-    const isDark = document.documentElement.classList.contains("dark");
-    setTheme(isDark ? "dark" : "light");
+    setEmailNotifs(localStorage.getItem("emailNotifs") !== "false");
+    setInAppMentions(localStorage.getItem("inAppMentions") !== "false");
+    setMarketing(localStorage.getItem("marketing") === "true");
+    setCompactMode(localStorage.getItem("compactMode") === "true");
   }, []);
 
-  const handleThemeChange = (value: "light" | "dark") => {
-    setTheme(value);
-    if (value === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
+  // Save to localStorage
+  const handleToggle = (key: string, setter: (val: boolean) => void, val: boolean) => {
+    setter(val);
+    localStorage.setItem(key, String(val));
+    
+    // If compact mode changes, add/remove class to body for actual functionality
+    if (key === "compactMode") {
+      if (val) document.body.classList.add("compact-ui");
+      else document.body.classList.remove("compact-ui");
     }
   };
 
   return (
-    <div className="p-8 space-y-8 max-w-3xl mx-auto">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground mt-2">Manage your app preferences.</p>
+    <div className="p-5 md:p-8 space-y-8 max-w-4xl mx-auto">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center border border-white/10 shadow-[0_0_20px_rgba(6,182,212,0.3)]">
+              <SettingsIcon className="w-6 h-6 text-white" />
+            </div>
+            Settings
+          </h1>
+          <p className="text-white/50 mt-2 text-sm md:text-base">Manage your application preferences and configurations.</p>
+        </div>
       </div>
 
       <div className="grid gap-8">
-        <Card className="bg-black/40 backdrop-blur-3xl border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] rounded-[2rem] overflow-hidden">
-          <CardHeader className="bg-white/5 border-b border-white/5">
-            <CardTitle>Appearance</CardTitle>
-            <CardDescription>Customize how Crewspace looks.</CardDescription>
+        <Card className="bg-black/40 backdrop-blur-3xl border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] rounded-[2rem] overflow-hidden relative group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl group-hover:bg-indigo-500/20 transition-all pointer-events-none" />
+          <CardHeader className="border-b border-white/5 pb-6">
+            <CardTitle className="text-white flex items-center gap-2">
+              <LayoutDashboard className="w-5 h-5 text-indigo-400" /> Interface Preferences
+            </CardTitle>
+            <CardDescription className="text-white/40">Customize how you interact with the dashboard.</CardDescription>
           </CardHeader>
-          <CardContent>
-            <RadioGroup value={theme} onValueChange={handleThemeChange} className="grid grid-cols-2 gap-4">
-              <div>
-                <RadioGroupItem value="light" id="light" className="peer sr-only" />
-                <Label
-                  htmlFor="light"
-                  className="flex flex-col items-center justify-between rounded-2xl border border-white/10 bg-black/40 p-4 hover:bg-white/5 peer-data-[state=checked]:border-primary peer-data-[state=checked]:shadow-[0_0_15px_rgba(var(--primary),0.3)] cursor-pointer transition-all"
-                >
-                  <div className="w-full h-20 bg-slate-200 rounded-md mb-3 flex flex-col gap-2 p-2">
-                    <div className="w-full h-4 bg-white rounded shadow-sm" />
-                    <div className="w-2/3 h-4 bg-white rounded shadow-sm" />
-                  </div>
-                  Light
-                </Label>
-              </div>
-              <div>
-                <RadioGroupItem value="dark" id="dark" className="peer sr-only" />
-                <Label
-                  htmlFor="dark"
-                  className="flex flex-col items-center justify-between rounded-2xl border border-white/10 bg-black/40 p-4 hover:bg-white/5 peer-data-[state=checked]:border-primary peer-data-[state=checked]:shadow-[0_0_15px_rgba(var(--primary),0.3)] cursor-pointer transition-all"
-                >
-                  <div className="w-full h-20 bg-slate-950 rounded-md mb-3 flex flex-col gap-2 p-2 border border-white/5">
-                    <div className="w-full h-4 bg-slate-800 rounded shadow-sm" />
-                    <div className="w-2/3 h-4 bg-slate-800 rounded shadow-sm" />
-                  </div>
-                  Dark
-                </Label>
-              </div>
-            </RadioGroup>
+          <CardContent className="space-y-6 pt-6">
+            <div className="flex items-center justify-between space-x-4 p-4 rounded-xl bg-white/5 border border-white/5">
+              <Label htmlFor="compact-mode" className="flex flex-col space-y-1 cursor-pointer">
+                <span className="text-white font-medium">Compact Layout</span>
+                <span className="font-normal text-sm text-white/50">Reduce padding and margins to fit more content on screen.</span>
+              </Label>
+              <Switch 
+                id="compact-mode" 
+                checked={compactMode} 
+                onCheckedChange={(v) => handleToggle("compactMode", setCompactMode, v)} 
+                className="data-[state=checked]:bg-indigo-500 data-[state=unchecked]:bg-white/20" 
+              />
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-black/40 backdrop-blur-3xl border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] rounded-[2rem] overflow-hidden">
-          <CardHeader className="bg-white/5 border-b border-white/5">
-            <CardTitle>Notifications</CardTitle>
-            <CardDescription>Control when and how you receive alerts.</CardDescription>
+        <Card className="bg-black/40 backdrop-blur-3xl border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] rounded-[2rem] overflow-hidden relative group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-fuchsia-500/10 rounded-full blur-3xl group-hover:bg-fuchsia-500/20 transition-all pointer-events-none" />
+          <CardHeader className="border-b border-white/5 pb-6">
+            <CardTitle className="text-white flex items-center gap-2">
+              <BellRing className="w-5 h-5 text-fuchsia-400" /> Notifications
+            </CardTitle>
+            <CardDescription className="text-white/40">Control when and how you receive alerts.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex items-center justify-between space-x-2">
-              <Label htmlFor="email-notifs" className="flex flex-col space-y-1">
-                <span>Email Notifications</span>
-                <span className="font-normal text-sm text-muted-foreground">Receive daily digests and critical alerts via email.</span>
+          <CardContent className="space-y-6 pt-6">
+            <div className="flex items-center justify-between space-x-4 p-4 rounded-xl bg-white/5 border border-white/5">
+              <Label htmlFor="email-notifs" className="flex flex-col space-y-1 cursor-pointer">
+                <span className="text-white font-medium">Email Notifications</span>
+                <span className="font-normal text-sm text-white/50">Receive daily digests and critical alerts via email.</span>
               </Label>
-              <Switch id="email-notifs" defaultChecked />
+              <Switch 
+                id="email-notifs" 
+                checked={emailNotifs} 
+                onCheckedChange={(v) => handleToggle("emailNotifs", setEmailNotifs, v)} 
+                className="data-[state=checked]:bg-fuchsia-500 data-[state=unchecked]:bg-white/20" 
+              />
             </div>
-            <div className="flex items-center justify-between space-x-2">
-              <Label htmlFor="push-notifs" className="flex flex-col space-y-1">
-                <span>In-App Mentions</span>
-                <span className="font-normal text-sm text-muted-foreground">Notify me when I am assigned to a task.</span>
+            
+            <div className="flex items-center justify-between space-x-4 p-4 rounded-xl bg-white/5 border border-white/5">
+              <Label htmlFor="push-notifs" className="flex flex-col space-y-1 cursor-pointer">
+                <span className="text-white font-medium">In-App Mentions</span>
+                <span className="font-normal text-sm text-white/50">Notify me immediately when I am assigned to a task.</span>
               </Label>
-              <Switch id="push-notifs" defaultChecked />
+              <Switch 
+                id="push-notifs" 
+                checked={inAppMentions} 
+                onCheckedChange={(v) => handleToggle("inAppMentions", setInAppMentions, v)} 
+                className="data-[state=checked]:bg-fuchsia-500 data-[state=unchecked]:bg-white/20" 
+              />
             </div>
-            <div className="flex items-center justify-between space-x-2">
-              <Label htmlFor="marketing" className="flex flex-col space-y-1">
-                <span>Marketing Updates</span>
-                <span className="font-normal text-sm text-muted-foreground">Receive news about new features.</span>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-black/40 backdrop-blur-3xl border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] rounded-[2rem] overflow-hidden relative group opacity-80 hover:opacity-100 transition-opacity">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl group-hover:bg-emerald-500/20 transition-all pointer-events-none" />
+          <CardHeader className="border-b border-white/5 pb-6">
+            <CardTitle className="text-white flex items-center gap-2">
+              <Shield className="w-5 h-5 text-emerald-400" /> Privacy & Marketing
+            </CardTitle>
+            <CardDescription className="text-white/40">Manage your promotional settings.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6 pt-6">
+            <div className="flex items-center justify-between space-x-4 p-4 rounded-xl bg-white/5 border border-white/5">
+              <Label htmlFor="marketing" className="flex flex-col space-y-1 cursor-pointer">
+                <span className="text-white font-medium">Marketing Updates</span>
+                <span className="font-normal text-sm text-white/50">Receive news about new features and platform updates.</span>
               </Label>
-              <Switch id="marketing" />
+              <Switch 
+                id="marketing" 
+                checked={marketing} 
+                onCheckedChange={(v) => handleToggle("marketing", setMarketing, v)} 
+                className="data-[state=checked]:bg-emerald-500 data-[state=unchecked]:bg-white/20" 
+              />
             </div>
           </CardContent>
         </Card>
