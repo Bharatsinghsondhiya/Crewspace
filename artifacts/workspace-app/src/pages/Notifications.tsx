@@ -1,4 +1,4 @@
-import { useListNotifications, useMarkNotificationRead, useMarkAllNotificationsRead, getListNotificationsQueryKey, useAcceptInvite } from "@workspace/api-client-react";
+import { useListNotifications, useMarkNotificationRead, useMarkAllNotificationsRead, getListNotificationsQueryKey, useAcceptInvite, useAcceptProjectInvite } from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Bell, Check, Clock, Inbox } from "lucide-react";
@@ -17,7 +17,8 @@ export default function Notifications() {
 
   const markReadMutation = useMarkNotificationRead();
   const markAllMutation = useMarkAllNotificationsRead();
-  const acceptMutation = useAcceptInvite();
+  const acceptWorkspaceMutation = useAcceptInvite();
+  const acceptProjectMutation = useAcceptProjectInvite();
   const [, setLocation] = useLocation();
 
   const handleMarkRead = (id: number) => {
@@ -26,8 +27,8 @@ export default function Notifications() {
     });
   };
 
-  const handleAcceptInvite = (id: number, token: string, workspaceId: number) => {
-    acceptMutation.mutate(
+  const handleAcceptWorkspace = (id: number, token: string, workspaceId: number) => {
+    acceptWorkspaceMutation.mutate(
       { data: { token } },
       {
         onSuccess: () => {
@@ -36,7 +37,23 @@ export default function Notifications() {
           setLocation(`/workspaces/${workspaceId}`);
         },
         onError: (err: any) => {
-          toast.error(err?.response?.data?.detail || "Failed to accept invitation");
+          toast.error(err?.response?.data?.detail || "Failed to accept workspace invitation");
+        }
+      }
+    );
+  };
+
+  const handleAcceptProject = (id: number, token: string, projectId: number) => {
+    acceptProjectMutation.mutate(
+      { token },
+      {
+        onSuccess: () => {
+          toast.success("Successfully joined the project!");
+          handleMarkRead(id);
+          setLocation(`/admin`); // Redirect to Project Hub
+        },
+        onError: (err: any) => {
+          toast.error(err?.response?.data?.detail || "Failed to accept project invitation");
         }
       }
     );
@@ -94,9 +111,10 @@ export default function Notifications() {
           notifications?.map(notification => {
             let messageText = notification.message;
             let inviteData: any = null;
-            const isInvite = notification.type === "workspace_invite";
+            const isWorkspaceInvite = notification.type === "workspace_invite";
+            const isProjectInvite = notification.type === "project_invite";
 
-            if (isInvite) {
+            if (isWorkspaceInvite || isProjectInvite) {
               try {
                 const parsed = JSON.parse(notification.message);
                 messageText = parsed.text || messageText;
@@ -129,16 +147,27 @@ export default function Notifications() {
                     </h4>
                     <p className="text-sm text-white/50 mt-1 leading-relaxed">{messageText}</p>
                     
-                    {isInvite && inviteData?.token && !notification.isRead && (
+                    {(isWorkspaceInvite || isProjectInvite) && inviteData?.token && !notification.isRead && (
                       <div className="mt-4 flex gap-3">
-                        <Button 
-                          className="bg-purple-600 hover:bg-purple-500 text-white rounded-xl shadow-[0_0_15px_rgba(168,85,247,0.4)]"
-                          size="sm" 
-                          onClick={() => handleAcceptInvite(notification.id, inviteData.token, notification.workspaceId!)}
-                          disabled={acceptMutation.isPending}
-                        >
-                          {acceptMutation.isPending ? "Accepting..." : "Accept Invite"}
-                        </Button>
+                        {isWorkspaceInvite ? (
+                          <Button 
+                            className="bg-purple-600 hover:bg-purple-500 text-white rounded-xl shadow-[0_0_15px_rgba(168,85,247,0.4)]"
+                            size="sm" 
+                            onClick={() => handleAcceptWorkspace(notification.id, inviteData.token, notification.workspaceId!)}
+                            disabled={acceptWorkspaceMutation.isPending}
+                          >
+                            {acceptWorkspaceMutation.isPending ? "Accepting..." : "Accept Workspace"}
+                          </Button>
+                        ) : (
+                          <Button 
+                            className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white rounded-xl shadow-[0_0_15px_rgba(192,38,211,0.4)]"
+                            size="sm" 
+                            onClick={() => handleAcceptProject(notification.id, inviteData.token, inviteData.projectId!)}
+                            disabled={acceptProjectMutation.isPending}
+                          >
+                            {acceptProjectMutation.isPending ? "Accepting..." : "Accept Project"}
+                          </Button>
+                        )}
                         <Button 
                           variant="ghost" 
                           size="sm"
@@ -156,7 +185,7 @@ export default function Notifications() {
                     </p>
                   </div>
                   
-                  {!notification.isRead && (!isInvite || !inviteData?.token) && (
+                  {!notification.isRead && (!(isWorkspaceInvite || isProjectInvite) || !inviteData?.token) && (
                     <Button 
                       variant="ghost" 
                       size="sm" 

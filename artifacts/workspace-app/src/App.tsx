@@ -21,6 +21,7 @@ import TaskDetail from "@/pages/TaskDetail";
 import Analytics from "@/pages/Analytics";
 import Notifications from "@/pages/Notifications";
 import Admin from "@/pages/Admin";
+import ProjectDetail from "@/pages/ProjectDetail";
 import Profile from "@/pages/Profile";
 import Settings from "@/pages/Settings";
 import AcceptInvite from "@/pages/AcceptInvite";
@@ -85,6 +86,9 @@ function Router() {
       </Route>
       <Route path="/admin">
         <ProtectedRoute adminOnly><AppLayout><Admin /></AppLayout></ProtectedRoute>
+      </Route>
+      <Route path="/admin/projects/:id">
+        <ProtectedRoute adminOnly><AppLayout><ProjectDetail /></AppLayout></ProtectedRoute>
       </Route>
       <Route path="/invites/:token">
         <AcceptInvite />

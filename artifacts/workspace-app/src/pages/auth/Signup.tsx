@@ -63,7 +63,7 @@ export default function Signup() {
           setLocation("/dashboard");
         },
         onError: (error: any) => {
-          toast.error(error?.data?.error || "Registration failed");
+          toast.error(error?.data?.detail || error?.data?.error || "Registration failed");
         },
       }
     );

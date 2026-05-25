@@ -24,6 +24,11 @@ class WorkspaceRoleEnum(str, Enum):
     member = 'member'
     viewer = 'viewer'
 
+class ProjectRoleEnum(str, Enum):
+    owner = 'owner'
+    admin = 'admin'
+    collaborator = 'collaborator'
+
 class TaskStatusEnum(str, Enum):
     pending = 'pending'
     in_progress = 'in_progress'
@@ -82,6 +87,7 @@ class WorkspaceResponseItem(BaseSchema):
     name: str
     description: Optional[str] = None
     owner_id: int
+    project_id: Optional[int] = None
     member_count: Optional[int] = None
     task_count: Optional[int] = None
     created_at: datetime
@@ -89,6 +95,7 @@ class WorkspaceResponseItem(BaseSchema):
 class CreateWorkspaceBody(BaseSchema):
     name: str = Field(min_length=1)
     description: Optional[str] = None
+    project_id: Optional[int] = None
 
 class UpdateWorkspaceBody(BaseSchema):
     name: Optional[str] = Field(None, min_length=1)
@@ -117,6 +124,40 @@ class WorkspaceMemberResponse(BaseSchema):
     role: WorkspaceRoleEnum
     joined_at: datetime
     user: UserResponse
+
+# Projects
+class ProjectResponseItem(BaseSchema):
+    id: int
+    name: str
+    description: Optional[str] = None
+    created_by_id: int
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    workspace_count: Optional[int] = None
+    member_count: Optional[int] = None
+    my_role: Optional[ProjectRoleEnum] = None
+
+class CreateProjectBody(BaseSchema):
+    name: str = Field(min_length=1)
+    description: Optional[str] = None
+
+class UpdateProjectBody(BaseSchema):
+    name: Optional[str] = Field(None, min_length=1)
+    description: Optional[str] = None
+
+class ProjectMemberResponse(BaseSchema):
+    user_id: int
+    project_id: int
+    role: ProjectRoleEnum
+    joined_at: datetime
+    user: UserResponse
+
+class InviteProjectMemberBody(BaseSchema):
+    email: EmailStr
+    role: ProjectRoleEnum = ProjectRoleEnum.collaborator
+
+class UpdateProjectMemberRoleBody(BaseSchema):
+    role: ProjectRoleEnum
 
 # Tasks
 class UserCompact(BaseSchema):

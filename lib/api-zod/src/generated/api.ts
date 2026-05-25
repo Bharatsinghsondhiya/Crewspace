@@ -14,13 +14,13 @@ export const signupBodyNameMin = 2;
 
 export const signupBodyPasswordMin = 8;
 
-export const signupBodyRoleDefault = `member`;
+export const signupBodyRoleDefault = `user`;
 
 export const SignupBody = zod.object({
   "name": zod.string().min(signupBodyNameMin),
   "email": zod.string().email(),
   "password": zod.string().min(signupBodyPasswordMin),
-  "role": zod.union([zod.enum(['admin', 'member']),zod.null()]).default(signupBodyRoleDefault)
+  "role": zod.union([zod.enum(['admin', 'user', 'member']),zod.null()]).default(signupBodyRoleDefault)
 })
 
 
@@ -37,7 +37,7 @@ export const LoginResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "email": zod.string().email(),
-  "role": zod.enum(['admin', 'member']),
+  "role": zod.enum(['admin', 'user', 'member']),
   "avatarUrl": zod.union([zod.string(),zod.null()]).optional(),
   "createdAt": zod.coerce.date()
 }),
@@ -53,7 +53,7 @@ export const GetMeResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "email": zod.string().email(),
-  "role": zod.enum(['admin', 'member']),
+  "role": zod.enum(['admin', 'user', 'member']),
   "avatarUrl": zod.union([zod.string(),zod.null()]).optional(),
   "createdAt": zod.coerce.date()
 })
@@ -108,7 +108,7 @@ export const UpdateProfileResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "email": zod.string().email(),
-  "role": zod.enum(['admin', 'member']),
+  "role": zod.enum(['admin', 'user', 'member']),
   "avatarUrl": zod.union([zod.string(),zod.null()]).optional(),
   "createdAt": zod.coerce.date()
 })
@@ -139,6 +139,7 @@ export const ListWorkspacesResponseItem = zod.object({
   "name": zod.string(),
   "description": zod.union([zod.string(),zod.null()]).optional(),
   "ownerId": zod.number(),
+  "projectId": zod.union([zod.number(),zod.null()]).optional(),
   "memberCount": zod.union([zod.number(),zod.null()]).optional(),
   "taskCount": zod.union([zod.number(),zod.null()]).optional(),
   "createdAt": zod.coerce.date()
@@ -154,7 +155,8 @@ export const ListWorkspacesResponse = zod.array(ListWorkspacesResponseItem)
 
 export const CreateWorkspaceBody = zod.object({
   "name": zod.string().min(1),
-  "description": zod.union([zod.string(),zod.null()]).optional()
+  "description": zod.union([zod.string(),zod.null()]).optional(),
+  "projectId": zod.union([zod.number(),zod.null()]).optional()
 })
 
 
@@ -178,6 +180,7 @@ export const UpdateWorkspaceResponse = zod.object({
   "name": zod.string(),
   "description": zod.union([zod.string(),zod.null()]).optional(),
   "ownerId": zod.number(),
+  "projectId": zod.union([zod.number(),zod.null()]).optional(),
   "memberCount": zod.union([zod.number(),zod.null()]).optional(),
   "taskCount": zod.union([zod.number(),zod.null()]).optional(),
   "createdAt": zod.coerce.date()
@@ -208,6 +211,7 @@ export const GetWorkspaceResponse = zod.object({
   "name": zod.string(),
   "description": zod.union([zod.string(),zod.null()]).optional(),
   "ownerId": zod.number(),
+  "projectId": zod.union([zod.number(),zod.null()]).optional(),
   "memberCount": zod.union([zod.number(),zod.null()]).optional(),
   "taskCount": zod.union([zod.number(),zod.null()]).optional(),
   "createdAt": zod.coerce.date()
@@ -230,7 +234,7 @@ export const GetWorkspaceMembersResponseItem = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "email": zod.string().email(),
-  "role": zod.enum(['admin', 'member']),
+  "role": zod.enum(['admin', 'user', 'member']),
   "avatarUrl": zod.union([zod.string(),zod.null()]).optional(),
   "createdAt": zod.coerce.date()
 })
@@ -458,7 +462,7 @@ export const UpdateMemberRoleResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "email": zod.string().email(),
-  "role": zod.enum(['admin', 'member']),
+  "role": zod.enum(['admin', 'user', 'member']),
   "avatarUrl": zod.union([zod.string(),zod.null()]).optional(),
   "createdAt": zod.coerce.date()
 })
@@ -474,6 +478,34 @@ export const RemoveWorkspaceMemberParams = zod.object({
 })
 
 export const RemoveWorkspaceMemberResponse = zod.unknown()
+
+
+/**
+ * @summary Get Workspace Analytics
+ */
+export const GetWorkspaceAnalyticsParams = zod.object({
+  "workspace_id": zod.coerce.number()
+})
+
+export const GetWorkspaceAnalyticsResponse = zod.object({
+  "totalTasks": zod.number(),
+  "completedTasks": zod.number(),
+  "pendingTasks": zod.number(),
+  "inProgressTasks": zod.number(),
+  "memberCount": zod.number(),
+  "completionRate": zod.number(),
+  "tasksByPriority": zod.array(zod.object({
+  "label": zod.string(),
+  "count": zod.number()
+})),
+  "tasksByMember": zod.array(zod.object({
+  "userId": zod.number(),
+  "name": zod.string(),
+  "avatarUrl": zod.union([zod.string(),zod.null()]).optional(),
+  "totalTasks": zod.number(),
+  "completedTasks": zod.number()
+}))
+})
 
 
 /**
@@ -504,11 +536,84 @@ export const GetDashboardSummaryResponse = zod.object({
 
 
 /**
- * @summary Get Workspace Analytics
+ * @summary Get My Tasks
  */
-export const GetWorkspaceAnalyticsResponse = zod.object({
-  "message": zod.string()
+export const GetMyTasksResponseItem = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.union([zod.string(),zod.null()]).optional(),
+  "status": zod.enum(['pending', 'in_progress', 'completed']),
+  "priority": zod.enum(['low', 'medium', 'high']),
+  "dueDate": zod.union([zod.coerce.date(),zod.null()]).optional(),
+  "workspaceId": zod.number(),
+  "assigneeId": zod.union([zod.number(),zod.null()]).optional(),
+  "createdById": zod.number(),
+  "labels": zod.union([zod.array(zod.string()),zod.null()]).optional(),
+  "assignee": zod.union([zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "avatarUrl": zod.union([zod.string(),zod.null()]).optional()
+}),zod.null()]).optional(),
+  "createdBy": zod.union([zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "avatarUrl": zod.union([zod.string(),zod.null()]).optional()
+}),zod.null()]).optional(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.union([zod.coerce.date(),zod.null()]).optional()
 })
+export const GetMyTasksResponse = zod.array(GetMyTasksResponseItem)
+
+
+/**
+ * @summary Get All Tasks
+ */
+export const GetAllTasksResponseItem = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.union([zod.string(),zod.null()]).optional(),
+  "status": zod.enum(['pending', 'in_progress', 'completed']),
+  "priority": zod.enum(['low', 'medium', 'high']),
+  "dueDate": zod.union([zod.coerce.date(),zod.null()]).optional(),
+  "workspaceId": zod.number(),
+  "assigneeId": zod.union([zod.number(),zod.null()]).optional(),
+  "createdById": zod.number(),
+  "labels": zod.union([zod.array(zod.string()),zod.null()]).optional(),
+  "assignee": zod.union([zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "avatarUrl": zod.union([zod.string(),zod.null()]).optional()
+}),zod.null()]).optional(),
+  "createdBy": zod.union([zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "avatarUrl": zod.union([zod.string(),zod.null()]).optional()
+}),zod.null()]).optional(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.union([zod.coerce.date(),zod.null()]).optional()
+})
+export const GetAllTasksResponse = zod.array(GetAllTasksResponseItem)
+
+
+/**
+ * @summary Get My Activity
+ */
+export const GetMyActivityResponseItem = zod.object({
+  "id": zod.number(),
+  "action": zod.string(),
+  "entityType": zod.string(),
+  "entityId": zod.number(),
+  "userId": zod.number(),
+  "workspaceId": zod.union([zod.number(),zod.null()]).optional(),
+  "description": zod.union([zod.string(),zod.null()]).optional(),
+  "user": zod.union([zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "avatarUrl": zod.union([zod.string(),zod.null()]).optional()
+}),zod.null()]).optional(),
+  "createdAt": zod.coerce.date()
+})
+export const GetMyActivityResponse = zod.array(GetMyActivityResponseItem)
 
 
 /**
@@ -538,7 +643,7 @@ export const AdminListUsersResponseItem = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "email": zod.string().email(),
-  "role": zod.enum(['admin', 'member']),
+  "role": zod.enum(['admin', 'user', 'member']),
   "avatarUrl": zod.union([zod.string(),zod.null()]).optional(),
   "createdAt": zod.coerce.date()
 })
@@ -560,7 +665,7 @@ export const AdminUpdateUserRoleResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "email": zod.string().email(),
-  "role": zod.enum(['admin', 'member']),
+  "role": zod.enum(['admin', 'user', 'member']),
   "avatarUrl": zod.union([zod.string(),zod.null()]).optional(),
   "createdAt": zod.coerce.date()
 })
@@ -641,6 +746,214 @@ export const AcceptInviteBody = zod.object({
 
 export const AcceptInviteResponse = zod.object({
   "message": zod.string()
+})
+
+
+/**
+ * @summary Search Users
+ */
+export const searchUsersQueryQueryDefault = ``;
+export const searchUsersQueryQueryMin = 0;
+
+
+
+export const SearchUsersQueryParams = zod.object({
+  "query": zod.coerce.string().min(searchUsersQueryQueryMin).default(searchUsersQueryQueryDefault)
+})
+
+export const SearchUsersResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "email": zod.string().email(),
+  "role": zod.enum(['admin', 'user', 'member']),
+  "avatarUrl": zod.union([zod.string(),zod.null()]).optional(),
+  "createdAt": zod.coerce.date()
+})
+export const SearchUsersResponse = zod.array(SearchUsersResponseItem)
+
+
+/**
+ * @summary Get Projects
+ */
+export const GetProjectsResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "description": zod.union([zod.string(),zod.null()]).optional(),
+  "createdById": zod.number(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.union([zod.coerce.date(),zod.null()]).optional(),
+  "workspaceCount": zod.union([zod.number(),zod.null()]).optional(),
+  "memberCount": zod.union([zod.number(),zod.null()]).optional(),
+  "myRole": zod.union([zod.enum(['owner', 'admin', 'collaborator']),zod.null()]).optional()
+})
+export const GetProjectsResponse = zod.array(GetProjectsResponseItem)
+
+
+/**
+ * @summary Create Project
+ */
+
+
+
+export const CreateProjectBody = zod.object({
+  "name": zod.string().min(1),
+  "description": zod.union([zod.string(),zod.null()]).optional()
+})
+
+
+/**
+ * @summary Get Project
+ */
+export const GetProjectParams = zod.object({
+  "project_id": zod.coerce.number()
+})
+
+export const GetProjectResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "description": zod.union([zod.string(),zod.null()]).optional(),
+  "createdById": zod.number(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.union([zod.coerce.date(),zod.null()]).optional(),
+  "workspaceCount": zod.union([zod.number(),zod.null()]).optional(),
+  "memberCount": zod.union([zod.number(),zod.null()]).optional(),
+  "myRole": zod.union([zod.enum(['owner', 'admin', 'collaborator']),zod.null()]).optional()
+})
+
+
+/**
+ * @summary Update Project
+ */
+export const UpdateProjectParams = zod.object({
+  "project_id": zod.coerce.number()
+})
+
+
+
+
+export const UpdateProjectBody = zod.object({
+  "name": zod.union([zod.string().min(1),zod.null()]).optional(),
+  "description": zod.union([zod.string(),zod.null()]).optional()
+})
+
+export const UpdateProjectResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "description": zod.union([zod.string(),zod.null()]).optional(),
+  "createdById": zod.number(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.union([zod.coerce.date(),zod.null()]).optional(),
+  "workspaceCount": zod.union([zod.number(),zod.null()]).optional(),
+  "memberCount": zod.union([zod.number(),zod.null()]).optional(),
+  "myRole": zod.union([zod.enum(['owner', 'admin', 'collaborator']),zod.null()]).optional()
+})
+
+
+/**
+ * @summary Delete Project
+ */
+export const DeleteProjectParams = zod.object({
+  "project_id": zod.coerce.number()
+})
+
+export const DeleteProjectResponse = zod.object({
+  "message": zod.string()
+})
+
+
+/**
+ * @summary Get Project Members
+ */
+export const GetProjectMembersParams = zod.object({
+  "project_id": zod.coerce.number()
+})
+
+export const GetProjectMembersResponseItem = zod.object({
+  "userId": zod.number(),
+  "projectId": zod.number(),
+  "role": zod.enum(['owner', 'admin', 'collaborator']),
+  "joinedAt": zod.coerce.date(),
+  "user": zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "email": zod.string().email(),
+  "role": zod.enum(['admin', 'user', 'member']),
+  "avatarUrl": zod.union([zod.string(),zod.null()]).optional(),
+  "createdAt": zod.coerce.date()
+})
+})
+export const GetProjectMembersResponse = zod.array(GetProjectMembersResponseItem)
+
+
+/**
+ * @summary Add Project Member
+ */
+export const AddProjectMemberParams = zod.object({
+  "project_id": zod.coerce.number()
+})
+
+export const addProjectMemberBodyRoleDefault = `collaborator`;
+
+export const AddProjectMemberBody = zod.object({
+  "email": zod.string().email(),
+  "role": zod.enum(['owner', 'admin', 'collaborator']).default(addProjectMemberBodyRoleDefault)
+})
+
+export const AddProjectMemberResponse = zod.object({
+  "message": zod.string()
+})
+
+
+/**
+ * @summary Accept Project Invite
+ */
+export const AcceptProjectInviteParams = zod.object({
+  "token": zod.coerce.string()
+})
+
+export const AcceptProjectInviteResponse = zod.object({
+  "message": zod.string()
+})
+
+
+/**
+ * @summary Remove Project Member
+ */
+export const RemoveProjectMemberParams = zod.object({
+  "project_id": zod.coerce.number(),
+  "user_id": zod.coerce.number()
+})
+
+export const RemoveProjectMemberResponse = zod.object({
+  "message": zod.string()
+})
+
+
+/**
+ * @summary Update Project Member Role
+ */
+export const UpdateProjectMemberRoleParams = zod.object({
+  "project_id": zod.coerce.number(),
+  "user_id": zod.coerce.number()
+})
+
+export const UpdateProjectMemberRoleBody = zod.object({
+  "role": zod.enum(['owner', 'admin', 'collaborator'])
+})
+
+export const UpdateProjectMemberRoleResponse = zod.object({
+  "userId": zod.number(),
+  "projectId": zod.number(),
+  "role": zod.enum(['owner', 'admin', 'collaborator']),
+  "joinedAt": zod.coerce.date(),
+  "user": zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "email": zod.string().email(),
+  "role": zod.enum(['admin', 'user', 'member']),
+  "avatarUrl": zod.union([zod.string(),zod.null()]).optional(),
+  "createdAt": zod.coerce.date()
+})
 })
 
 

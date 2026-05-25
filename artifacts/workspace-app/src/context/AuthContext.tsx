@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { User, AuthResponse } from "@workspace/api-client-react";
+import { UserResponse as User, LoginResponse as AuthResponse } from "@workspace/api-client-react";
 import { useLocation } from "wouter";
 
 interface AuthContextType {

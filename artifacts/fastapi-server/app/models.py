@@ -32,14 +32,43 @@ class WorkspaceMemberRole(str, enum.Enum):
     member = "member"
     viewer = "viewer"
 
+class ProjectMemberRole(str, enum.Enum):
+    owner = "owner"
+    admin = "admin"
+    collaborator = "collaborator"
+
+class Project(Base):
+    __tablename__ = "projects"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    created_by_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())
+
+    created_by = relationship("User")
+
+class ProjectMember(Base):
+    __tablename__ = "project_members"
+    project_id = Column(Integer, ForeignKey("projects.id", ondelete="CASCADE"), primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    role = Column(Enum(ProjectMemberRole), nullable=False, default=ProjectMemberRole.collaborator)
+    joined_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+
+    project = relationship("Project")
+    user = relationship("User")
+
 class Workspace(Base):
     __tablename__ = "workspaces"
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     owner_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    project_id = Column(Integer, ForeignKey("projects.id", ondelete="CASCADE"), nullable=True)
     created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
     updated_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())
+    
+    project = relationship("Project")
 
 class WorkspaceMember(Base):
     __tablename__ = "workspace_members"
@@ -85,6 +114,7 @@ class NotificationType(str, enum.Enum):
     due_date_reminder = "due_date_reminder"
     task_completed = "task_completed"
     workspace_invite = "workspace_invite"
+    project_invite = "project_invite"
     member_joined = "member_joined"
 
 class Notification(Base):
@@ -126,4 +156,19 @@ class WorkspaceInvitation(Base):
     created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     workspace = relationship("Workspace")
+    invited_by = relationship("User")
+
+class ProjectInvitation(Base):
+    __tablename__ = "project_invitations"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    project_id = Column(Integer, ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
+    email = Column(String(255), nullable=False)
+    invited_by_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    role = Column(Enum(ProjectMemberRole), nullable=False, default=ProjectMemberRole.collaborator)
+    token = Column(String(255), nullable=False, unique=True)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    accepted = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+
+    project = relationship("Project")
     invited_by = relationship("User")

@@ -40,8 +40,8 @@ export default function Login() {
           setAuthContext(response);
           setLocation("/dashboard");
         },
-        onError: (error) => {
-          toast.error(error.data?.error || "Login failed");
+        onError: (error: any) => {
+          toast.error(error?.data?.detail || error?.data?.error || "Login failed");
         },
       }
     );

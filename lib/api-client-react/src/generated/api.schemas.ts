@@ -41,14 +41,16 @@ export interface AdminStatsResponse {
   tasksByStatus?: TaskCountByLabel[] | null;
 }
 
-export interface AnalyticsResponse {
-  message: string;
-}
-
 export interface ChangePasswordBody {
   currentPassword: string;
   /** @minLength 8 */
   newPassword: string;
+}
+
+export interface CreateProjectBody {
+  /** @minLength 1 */
+  name: string;
+  description?: string | null;
 }
 
 export type TaskStatusEnum = typeof TaskStatusEnum[keyof typeof TaskStatusEnum];
@@ -84,6 +86,7 @@ export interface CreateWorkspaceBody {
   /** @minLength 1 */
   name: string;
   description?: string | null;
+  projectId?: number | null;
 }
 
 export interface DashboardSummaryResponse {
@@ -124,6 +127,20 @@ export interface InviteMemberBody {
   role?: WorkspaceRoleEnum;
 }
 
+export type ProjectRoleEnum = typeof ProjectRoleEnum[keyof typeof ProjectRoleEnum];
+
+
+export const ProjectRoleEnum = {
+  owner: 'owner',
+  admin: 'admin',
+  collaborator: 'collaborator',
+} as const;
+
+export interface InviteProjectMemberBody {
+  email: string;
+  role?: ProjectRoleEnum;
+}
+
 export interface LoginBody {
   email: string;
   password: string;
@@ -134,6 +151,7 @@ export type RoleEnum = typeof RoleEnum[keyof typeof RoleEnum];
 
 export const RoleEnum = {
   admin: 'admin',
+  user: 'user',
   member: 'member',
 } as const;
 
@@ -179,6 +197,26 @@ export interface NotificationResponseItem {
   createdAt: string;
 }
 
+export interface ProjectMemberResponse {
+  userId: number;
+  projectId: number;
+  role: ProjectRoleEnum;
+  joinedAt: string;
+  user: UserResponse;
+}
+
+export interface ProjectResponseItem {
+  id: number;
+  name: string;
+  description?: string | null;
+  createdById: number;
+  createdAt: string;
+  updatedAt?: string | null;
+  workspaceCount?: number | null;
+  memberCount?: number | null;
+  myRole?: ProjectRoleEnum | null;
+}
+
 export interface ResetPasswordBody {
   token: string;
   password: string;
@@ -191,6 +229,14 @@ export interface SignupBody {
   /** @minLength 8 */
   password: string;
   role?: RoleEnum | null;
+}
+
+export interface TaskCountByUser {
+  userId: number;
+  name: string;
+  avatarUrl?: string | null;
+  totalTasks: number;
+  completedTasks: number;
 }
 
 export interface TaskResponseItem {
@@ -215,6 +261,15 @@ export interface UpdateProfileBody {
   avatarUrl?: string | null;
 }
 
+export interface UpdateProjectBody {
+  name?: string | null;
+  description?: string | null;
+}
+
+export interface UpdateProjectMemberRoleBody {
+  role: ProjectRoleEnum;
+}
+
 export interface UpdateRoleBody {
   role: string;
 }
@@ -232,6 +287,17 @@ export interface UpdateTaskBody {
 export interface UpdateWorkspaceBody {
   name?: string | null;
   description?: string | null;
+}
+
+export interface WorkspaceAnalyticsResponse {
+  totalTasks: number;
+  completedTasks: number;
+  pendingTasks: number;
+  inProgressTasks: number;
+  memberCount: number;
+  completionRate: number;
+  tasksByPriority: TaskCountByLabel[];
+  tasksByMember: TaskCountByUser[];
 }
 
 export interface WorkspaceInvitationResponse {
@@ -258,6 +324,7 @@ export interface WorkspaceResponseItem {
   name: string;
   description?: string | null;
   ownerId: number;
+  projectId?: number | null;
   memberCount?: number | null;
   taskCount?: number | null;
   createdAt: string;
@@ -265,5 +332,12 @@ export interface WorkspaceResponseItem {
 
 export type UpdateMemberRoleParams = {
 role: string;
+};
+
+export type SearchUsersParams = {
+/**
+ * @minLength 0
+ */
+query?: string;
 };
 
