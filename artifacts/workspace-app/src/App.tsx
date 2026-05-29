@@ -31,15 +31,12 @@ import AllTasks from "@/pages/AllTasks";
 
 const queryClient = new QueryClient();
 
-function RootRedirect() {
-  const { isAuthenticated } = useAuth();
-  return <Redirect to={isAuthenticated ? "/dashboard" : "/login"} />;
-}
+import Landing from "@/pages/Landing";
 
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={RootRedirect} />
+      <Route path="/" component={Landing} />
       
       {/* Auth Routes */}
       <Route path="/login" component={Login} />

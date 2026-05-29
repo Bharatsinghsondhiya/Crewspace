@@ -1,22 +1,33 @@
 import { ReactNode } from "react";
 import { Link } from "wouter";
-import { Shield, Zap, Users } from "lucide-react";
+import { Shield, Zap, Users, ArrowLeft } from "lucide-react";
 
 export function AuthLayout({ children, title, subtitle }: { children: ReactNode; title: string; subtitle: string }) {
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-transparent relative overflow-hidden">
 
       {/* LEFT — Form Panel */}
-      <div className="flex-1 flex items-center justify-center p-4 md:p-8 z-20 relative overflow-hidden">
+      <div className="flex-1 flex flex-col p-4 md:p-8 z-20 relative overflow-y-auto min-h-screen">
+        
+        {/* Back to Home Button - Placed neatly at the top */}
+        <div className="w-full flex justify-start mt-2 mb-8 md:mb-0 md:absolute md:top-8 md:left-8 z-50 shrink-0">
+          <Link href="/" className="inline-flex items-center gap-2 px-3 py-2 -ml-3 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition-colors font-medium text-sm">
+            <ArrowLeft size={16} />
+            Back to Home
+          </Link>
+        </div>
+
         {/* Purple glow behind form */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full max-w-md max-h-[600px] bg-gradient-to-tr from-purple-700/20 via-violet-900/25 to-indigo-900/20 rounded-full blur-[100px] pointer-events-none" />
 
-        <div className="w-full max-w-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 relative z-10">
-          <div className="space-y-2 text-left">
-            <h1 className="text-4xl font-black tracking-tight text-white uppercase">{title}</h1>
-            <p className="text-white/70 text-base font-medium">{subtitle}</p>
+        <div className="flex-1 flex items-center justify-center w-full">
+          <div className="w-full max-w-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 relative z-10 mb-12 md:mb-0">
+            <div className="space-y-2 text-left">
+              <h1 className="text-4xl font-black tracking-tight text-white uppercase">{title}</h1>
+              <p className="text-white/70 text-base font-medium">{subtitle}</p>
+            </div>
+            {children}
           </div>
-          {children}
         </div>
       </div>
 
