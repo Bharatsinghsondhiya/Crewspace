@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from "wouter";
 import {
-  Command, CheckCircle2, Circle, Play, Calendar,
+  Command as CommandIcon, CheckCircle2, Circle, Play, Calendar,
   Inbox, Hash, ArrowRight, Zap, RefreshCw, Layers,
   Terminal, Check, Activity, Link as LinkIcon, Lock
 } from "lucide-react";
+import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 
 const SectionHeader = ({ title }: { title: string }) => (
   <div className="flex items-center gap-3 mb-8 border-b border-purple-500/20 pb-4">
@@ -151,7 +152,7 @@ const FloatingBackground = () => {
         transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 2 }}
         className="absolute top-[15%] right-[15%] text-violet-400"
       >
-        <Command size={48} />
+        <CommandIcon size={48} />
       </motion.div>
       <motion.div
         animate={{ y: [0, 25, 0], opacity: [0.03, 0.15, 0.03] }}
@@ -180,6 +181,18 @@ const FloatingBackground = () => {
 
 export default function Landing() {
   const [, setLocation] = useLocation();
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setOpen((open) => !open);
+      }
+    }
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
+  }, []);
 
   return (
     <div className="h-screen w-full overflow-y-auto bg-transparent scroll-smooth relative">
@@ -187,24 +200,24 @@ export default function Landing() {
       <div className="min-h-full flex flex-col text-white font-sans selection:bg-purple-500/30 relative z-10">
         {/* Simple Inline Navbar */}
         <nav className="w-full border-b border-white/5 bg-transparent sticky top-0 z-50 backdrop-blur-md">
-          <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
             {/* Logo */}
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-violet-700 rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(139,92,246,0.5)] border border-purple-400/30">
-                <span className="text-white text-lg font-black leading-none">C</span>
+              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-purple-500 to-violet-700 rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(139,92,246,0.5)] border border-purple-400/30">
+                <span className="text-white text-base sm:text-lg font-black leading-none">C</span>
               </div>
-              <span className="text-xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-violet-200 to-fuchsia-300">Crewspace</span>
+              <span className="text-lg sm:text-xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-violet-200 to-fuchsia-300 hidden sm:inline-block">Crewspace</span>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               <button 
                 onClick={() => setLocation('/login')}
-                className="text-sm font-medium text-white/70 hover:text-white transition-colors"
+                className="text-xs sm:text-sm font-medium text-white/70 hover:text-white transition-colors px-2 sm:px-0"
               >
                 Log in
               </button>
               <button 
                 onClick={() => setLocation('/signup')}
-                className="text-sm font-medium bg-purple-600/20 border border-purple-500/50 text-purple-100 px-4 py-1.5 rounded hover:bg-purple-600/40 transition-colors"
+                className="text-xs sm:text-sm font-medium bg-purple-600/20 border border-purple-500/50 text-purple-100 px-3 sm:px-4 py-1.5 rounded hover:bg-purple-600/40 transition-colors"
               >
                 Get Access
               </button>
@@ -223,18 +236,21 @@ export default function Landing() {
               <h1 className="text-4xl md:text-6xl font-medium text-white tracking-tight leading-tight">
                 Your personal operating <br /> system for focused work.
               </h1>
-              <p className="text-lg text-white/60 max-w-xl leading-relaxed">
+              <p className="text-base sm:text-lg text-white/60 max-w-xl leading-relaxed px-4 sm:px-0">
                 Plan less. Execute better. Review everything. A calm, keyboard-first command center for your tasks, routines, notes, and deep work.
               </p>
-              <div className="flex items-center gap-4 pt-4">
+              <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 pt-4 w-full sm:w-auto px-6 sm:px-0">
                 <button 
                   onClick={() => setLocation('/login')}
-                  className="h-11 px-6 rounded-lg bg-white text-black hover:bg-white/90 text-sm font-semibold transition-colors flex items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+                  className="w-full sm:w-auto h-12 sm:h-11 px-6 rounded-lg bg-white text-black hover:bg-white/90 text-sm font-semibold transition-colors flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
                 >
                   Initialize Workspace <ArrowRight size={16} />
                 </button>
-                <button className="h-11 px-6 rounded-lg border border-purple-500/30 bg-purple-950/20 hover:bg-purple-900/30 text-purple-100 text-sm font-medium transition-colors font-mono">
-                  ⌘ K to explore
+                <button 
+                  onClick={() => setOpen(true)}
+                  className="w-full sm:w-auto h-12 sm:h-11 px-6 rounded-lg border border-purple-500/30 bg-purple-950/20 hover:bg-purple-900/30 text-purple-100 text-sm font-medium transition-colors font-mono flex items-center justify-center gap-2"
+                >
+                  <CommandIcon size={14} className="sm:hidden" /> ⌘ K to explore
                 </button>
               </div>
             </div>
@@ -399,10 +415,41 @@ export default function Landing() {
         </main>
 
         {/* Simple Footer */}
-        <footer className="py-8 border-t border-white/5 text-center text-white/30 text-sm font-mono bg-transparent">
-          &copy; {new Date().getFullYear()} WorkspaceOS. All rights reserved.
+        <footer className="py-8 border-t border-white/5 text-center text-white/30 text-xs sm:text-sm font-mono bg-transparent">
+          &copy; {new Date().getFullYear()} Crewspace. All rights reserved.
         </footer>
       </div>
+
+      <CommandDialog open={open} onOpenChange={setOpen}>
+        <CommandInput placeholder="Type a command or search..." />
+        <CommandList>
+          <CommandEmpty>No results found.</CommandEmpty>
+          <CommandGroup heading="Actions">
+            <CommandItem onSelect={() => setLocation('/login')} className="cursor-pointer">
+              <ArrowRight className="mr-2 h-4 w-4" />
+              <span>Login to your workspace</span>
+            </CommandItem>
+            <CommandItem onSelect={() => setLocation('/signup')} className="cursor-pointer">
+              <Zap className="mr-2 h-4 w-4" />
+              <span>Create new account</span>
+            </CommandItem>
+          </CommandGroup>
+          <CommandGroup heading="Features">
+            <CommandItem onSelect={() => setOpen(false)} className="cursor-pointer">
+              <Terminal className="mr-2 h-4 w-4" />
+              <span>Focus Engine</span>
+            </CommandItem>
+            <CommandItem onSelect={() => setOpen(false)} className="cursor-pointer">
+              <Layers className="mr-2 h-4 w-4" />
+              <span>Project Management</span>
+            </CommandItem>
+            <CommandItem onSelect={() => setOpen(false)} className="cursor-pointer">
+              <Hash className="mr-2 h-4 w-4" />
+              <span>Knowledge Graph</span>
+            </CommandItem>
+          </CommandGroup>
+        </CommandList>
+      </CommandDialog>
     </div>
   );
 }
