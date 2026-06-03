@@ -151,8 +151,8 @@ async def create_task(workspace_id: int, task_in: CreateTaskBody, db: AsyncSessi
 @router.patch("/{workspace_id}/tasks/{task_id}", response_model=TaskResponseItem)
 async def update_task(workspace_id: int, task_id: int, task_in: UpdateTaskBody, db: AsyncSession = Depends(get_db), member: WorkspaceMember = AnyMember):
     task = await db.scalar(select(Task).where(Task.id == task_id))
-    if not task:
-        raise HTTPException(404, "Task not found")
+    if not task or task.workspace_id != workspace_id:
+        raise HTTPException(404, "Task not found in this workspace")
         
     update_data = task_in.model_dump(exclude_unset=True)
     
@@ -196,15 +196,15 @@ async def update_task(workspace_id: int, task_id: int, task_in: UpdateTaskBody, 
 async def get_task(workspace_id: int, task_id: int, db: AsyncSession = Depends(get_db), _: WorkspaceMember = AnyMember):
     stmt = select(Task).options(selectinload(Task.assignee), selectinload(Task.created_by)).where(Task.id == task_id)
     task = await db.scalar(stmt)
-    if not task:
-        raise HTTPException(404, "Task not found")
+    if not task or task.workspace_id != workspace_id:
+        raise HTTPException(404, "Task not found in this workspace")
     return task
 
 @router.delete("/{workspace_id}/tasks/{task_id}")
 async def delete_task(workspace_id: int, task_id: int, db: AsyncSession = Depends(get_db), _: WorkspaceMember = OwnerOnly):
     task = await db.scalar(select(Task).where(Task.id == task_id))
-    if not task:
-        raise HTTPException(404, "Task not found")
+    if not task or task.workspace_id != workspace_id:
+        raise HTTPException(404, "Task not found in this workspace")
     await db.delete(task)
     await db.commit()
     return {"message": "Task deleted"}

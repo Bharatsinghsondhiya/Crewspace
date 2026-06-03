@@ -57,9 +57,15 @@ async def catch_exceptions_middleware(request: Request, call_next):
             f.write(f"Request: {request.method} {request.url}\n")
             traceback.print_exc(file=f)
             f.write("\n")
+        
+        response_content = {"detail": "Internal Server Error"}
+        if os.getenv("DEBUG", "").lower() == "true":
+            response_content["error"] = str(e)
+            response_content["traceback"] = traceback.format_exc()
+            
         return JSONResponse(
             status_code=500,
-            content={"detail": "Internal Server Error", "error": str(e), "traceback": traceback.format_exc()}
+            content=response_content
         )
 
 @app.exception_handler(Exception)
@@ -73,9 +79,15 @@ async def custom_exception_handler(request: Request, exc: Exception):
         f.write(f"Request: {request.method} {request.url}\n")
         traceback.print_exception(type(exc), exc, exc.__traceback__, file=f)
         f.write("\n")
+        
+    response_content = {"detail": "Internal Server Error"}
+    if os.getenv("DEBUG", "").lower() == "true":
+        response_content["error"] = str(exc)
+        response_content["traceback"] = traceback.format_exc()
+        
     return JSONResponse(
         status_code=500,
-        content={"detail": "Internal Server Error", "error": str(exc), "traceback": traceback.format_exc()}
+        content=response_content
     )
 
 

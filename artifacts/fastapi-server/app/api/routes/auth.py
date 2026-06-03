@@ -84,10 +84,8 @@ async def forgot_password(body: ForgotPasswordBody, db: AsyncSession = Depends(g
     user = result.scalars().first()
     
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email address is not registered"
-        )
+        # Prevent Email Enumeration / User Enumeration vulnerability
+        return MessageResponse(message="If the email exists, a reset link will be sent.")
         
     # Generate secure random token
     token = secrets.token_urlsafe(32)
@@ -160,7 +158,10 @@ async def reset_password(body: ResetPasswordBody, db: AsyncSession = Depends(get
 
 
 @router.get("/db-test")
-async def db_test(db: AsyncSession = Depends(get_db)):
+async def db_test(db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
+    # Restrict to admin users only to prevent sensitive info leakage
+    if current_user.role.value != "admin":
+        raise HTTPException(status_code=403, detail="Forbidden")
     try:
         from sqlalchemy import text
         result = await db.execute(text("SELECT 1"))
