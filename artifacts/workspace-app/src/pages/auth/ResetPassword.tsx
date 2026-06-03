@@ -47,7 +47,7 @@ export default function ResetPassword() {
           setLocation("/login");
         },
         onError: (error) => {
-          toast.error(error.data?.error || "Failed to reset password");
+          toast.error(error?.data?.detail || error?.data?.error || "Failed to reset password");
         },
       }
     );

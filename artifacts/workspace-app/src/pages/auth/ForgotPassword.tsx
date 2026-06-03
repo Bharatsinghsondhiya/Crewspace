@@ -34,12 +34,13 @@ export default function ForgotPassword() {
           toast.success("Password reset instructions sent");
           form.reset();
         },
-        onError: () => {
-          toast.error("Failed to send reset instructions");
+        onError: (error) => {
+          toast.error(error?.data?.detail || error?.data?.error || "Failed to send reset instructions");
         },
       }
     );
   };
+
 
   return (
     <AuthLayout title="Reset Password" subtitle="Enter your email to receive reset instructions.">

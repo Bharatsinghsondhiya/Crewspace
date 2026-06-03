@@ -144,6 +144,77 @@ export default function WorkspaceTasks() {
     { id: "low" as const, title: "Low Priority", icon: <ArrowDownCircle className="w-4 h-4 text-blue-500" /> },
   ];
 
+  if (tasksLoading) {
+    return (
+      <div className="p-5 md:p-6 space-y-5 max-w-[1600px] mx-auto min-h-screen md:h-[calc(100vh-1rem)] flex flex-col">
+        {/* Header Skeleton */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between shrink-0 gap-4">
+          <div className="space-y-2 animate-pulse">
+            <div className="h-8 w-24 bg-white/10 rounded-xl" />
+            <div className="h-4 w-48 bg-white/5 rounded-lg" />
+          </div>
+          <div className="flex items-center gap-3 animate-pulse">
+            <div className="h-9 w-48 bg-white/5 rounded-xl hidden sm:block" />
+            <div className="h-9 w-24 bg-white/5 rounded-xl" />
+            <div className="h-9 w-28 bg-white/10 rounded-xl" />
+          </div>
+        </div>
+
+        {/* Kanban Columns Skeleton */}
+        <div className="flex-1 min-h-0 flex flex-col md:flex-row gap-5 overflow-x-auto overflow-y-auto md:overflow-hidden pb-2">
+          {columns.map((col) => {
+            const borderColor = col.id === "high" ? "border-red-500/10" : col.id === "medium" ? "border-orange-500/10" : "border-blue-500/10";
+            const topBar = col.id === "high" ? "from-red-500/30 to-transparent" : col.id === "medium" ? "from-orange-500/30 to-transparent" : "from-blue-500/30 to-transparent";
+            const headerColor = col.id === "high" ? "text-red-400/40" : col.id === "medium" ? "text-orange-400/40" : "text-blue-400/40";
+            
+            return (
+              <div key={col.id}
+                className={`flex flex-col w-full md:flex-1 md:min-w-0 rounded-2xl border ${borderColor} relative overflow-hidden min-h-[300px] md:min-h-0`}
+                style={{ background: "rgba(14, 8, 30, 0.4)" }}
+              >
+                {/* Top color bar */}
+                <div className={`absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r ${topBar}`} />
+                
+                {/* Column header */}
+                <div className="flex items-center justify-between px-5 pt-5 pb-4 shrink-0 animate-pulse">
+                  <div className={`flex items-center gap-2 font-semibold text-sm ${headerColor}`}>
+                    {col.icon} {col.title}
+                  </div>
+                  <div className="w-5 h-5 rounded-full bg-white/5 border border-white/5" />
+                </div>
+
+                {/* Task card skeletons (shimmer style) */}
+                <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-3">
+                  {[1, 2, 3].map((n) => (
+                    <div key={n}
+                      className="rounded-xl border border-white/5 p-4 space-y-4 animate-pulse"
+                      style={{ 
+                        background: "linear-gradient(135deg, rgba(20, 10, 45, 0.4) 0%, rgba(20, 10, 45, 0.2) 100%)",
+                        boxShadow: "0 4px 20px rgba(0,0,0,0.1)"
+                      }}
+                    >
+                      <div className="flex items-start gap-2">
+                        <div className="w-3.5 h-3.5 bg-white/5 rounded shrink-0 mt-0.5" />
+                        <div className="flex-1 space-y-2">
+                          <div className="h-4 bg-white/10 rounded-lg w-5/6" />
+                          {n === 1 && <div className="h-3.5 bg-white/5 rounded-lg w-2/3" />}
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between pt-1">
+                        <div className="h-5 w-16 bg-white/5 rounded border border-white/5" />
+                        <div className="w-6 h-6 rounded-full bg-white/10" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-5 md:p-6 space-y-5 max-w-[1600px] mx-auto min-h-screen md:h-[calc(100vh-1rem)] flex flex-col">
       {/* Header */}

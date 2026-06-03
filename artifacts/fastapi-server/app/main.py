@@ -38,6 +38,48 @@ app = FastAPI(
 from app.api.api_router import api_router
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
+from fastapi import Request
+from fastapi.responses import JSONResponse
+import traceback
+from datetime import datetime
+
+@app.middleware("http")
+async def catch_exceptions_middleware(request: Request, call_next):
+    try:
+        return await call_next(request)
+    except Exception as e:
+        import os
+        log_dir = r"e:\Access-Control-Hub\artifacts"
+        os.makedirs(log_dir, exist_ok=True)
+        log_file = os.path.join(log_dir, "error_trace.log")
+        with open(log_file, "a") as f:
+            f.write(f"--- Exception occurred at {datetime.now()} ---\n")
+            f.write(f"Request: {request.method} {request.url}\n")
+            traceback.print_exc(file=f)
+            f.write("\n")
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "Internal Server Error", "error": str(e), "traceback": traceback.format_exc()}
+        )
+
+@app.exception_handler(Exception)
+async def custom_exception_handler(request: Request, exc: Exception):
+    import os
+    log_dir = r"e:\Access-Control-Hub\artifacts"
+    os.makedirs(log_dir, exist_ok=True)
+    log_file = os.path.join(log_dir, "error_trace.log")
+    with open(log_file, "a") as f:
+        f.write(f"--- Exception handler caught at {datetime.now()} ---\n")
+        f.write(f"Request: {request.method} {request.url}\n")
+        traceback.print_exception(type(exc), exc, exc.__traceback__, file=f)
+        f.write("\n")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal Server Error", "error": str(exc), "traceback": traceback.format_exc()}
+    )
+
+
+
 
 # Configure CORS to allow frontend connections
 import os

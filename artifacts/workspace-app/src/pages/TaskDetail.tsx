@@ -161,10 +161,49 @@ export default function TaskDetail() {
   };
 
   if (isLoading || !task) return (
-    <div className="flex-1 flex items-center justify-center min-h-[60vh] animate-in fade-in duration-700">
-      <div className="flex flex-col items-center gap-4">
-        <Loader2 className="w-10 h-10 animate-spin text-primary" />
-        <p className="text-muted-foreground font-medium animate-pulse">Loading task details...</p>
+    <div className="p-5 md:p-8 space-y-8 max-w-7xl mx-auto animate-pulse">
+      {/* Back button and ID skeleton */}
+      <div className="flex items-center justify-between mb-2">
+        <div className="h-9 w-28 bg-white/5 rounded-xl" />
+        <div className="h-7 w-24 bg-white/5 rounded-xl" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in duration-500">
+        {/* Left Card Skeleton */}
+        <div className="lg:col-span-2 bg-black/40 border border-white/5 rounded-[2.5rem] p-8 space-y-6">
+          <div className="space-y-4">
+            <div className="h-10 bg-white/10 rounded-xl w-3/4" />
+            <div className="h-3 bg-white/5 rounded-lg w-12" />
+          </div>
+          <div className="h-40 bg-white/5 rounded-2xl p-6" />
+          <div className="flex justify-end pt-2">
+            <div className="h-12 w-36 bg-white/10 rounded-xl" />
+          </div>
+        </div>
+
+        {/* Right Card and button Skeleton */}
+        <div className="space-y-6">
+          <div className="bg-black/40 border border-white/5 rounded-[2.5rem] p-8 space-y-8">
+            <div className="h-6 bg-white/10 rounded-lg w-1/3 mb-6" />
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="space-y-3">
+                <div className="h-4 bg-white/5 rounded-lg w-1/4" />
+                <div className="h-12 bg-white/5 rounded-xl" />
+              </div>
+            ))}
+            <div className="pt-6 mt-2 border-t border-white/5 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="h-4 bg-white/5 rounded-lg w-1/4" />
+                <div className="h-6 bg-white/5 rounded-lg w-1/3" />
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="h-4 bg-white/5 rounded-lg w-1/4" />
+                <div className="h-4 bg-white/5 rounded-lg w-1/3" />
+              </div>
+            </div>
+          </div>
+          <div className="h-14 bg-white/5 rounded-2xl" />
+        </div>
       </div>
     </div>
   );

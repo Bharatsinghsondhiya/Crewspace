@@ -15,6 +15,16 @@ class Settings(BaseSettings):
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"
 
+    # SMTP Settings (optional, falls back to nodemailer ethereal account)
+    SMTP_HOST: str | None = None
+    SMTP_PORT: int = 587
+    SMTP_USER: str | None = None
+    SMTP_PASS: str | None = None
+    SMTP_FROM: str | None = None
+    
+    # Frontend URL for password reset link
+    FRONTEND_URL: str = "http://localhost:5173"
+
     @property
     def async_database_url(self) -> str:
         return self.DATABASE_URL

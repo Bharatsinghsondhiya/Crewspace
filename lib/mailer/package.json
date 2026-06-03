@@ -1,0 +1,10 @@
+{
+  "name": "@workspace/mailer",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "send-mail.js",
+  "dependencies": {
+    "nodemailer": "^6.10.0"
+  }
+}
