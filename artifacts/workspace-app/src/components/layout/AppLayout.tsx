@@ -26,9 +26,6 @@ function AppLayoutInner({ children }: { children: ReactNode }) {
   const { user, logout: contextLogout } = useAuth();
   const [location] = useLocation();
   const { data: projects } = useGetProjects({});
-  
-  const isProjectAdmin = projects?.some(p => p.my_role === "admin" || p.my_role === "owner");
-  const showProjectHub = user?.role === "admin" || isProjectAdmin;
 
   const logoutMutation = useLogout();
   const { setOpenMobile, isMobile } = useSidebar();
@@ -87,16 +84,14 @@ function AppLayoutInner({ children }: { children: ReactNode }) {
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
-                    {showProjectHub && (
-                      <SidebarMenuItem>
-                        <SidebarMenuButton asChild isActive={location.startsWith("/admin")} className="h-10 rounded-xl data-[active=true]:bg-purple-500/15 data-[active=true]:text-purple-300 data-[active=true]:border-l-2 data-[active=true]:border-purple-400 data-[active=true]:font-semibold text-white/60 hover:text-white hover:bg-purple-500/8 transition-all pl-3">
-                          <Link href="/admin" onClick={handleLinkClick}>
-                            <Shield className="w-4 h-4" />
-                            <span className="text-sm">Project Hub</span>
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    )}
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild isActive={location.startsWith("/admin")} className="h-10 rounded-xl data-[active=true]:bg-purple-500/15 data-[active=true]:text-purple-300 data-[active=true]:border-l-2 data-[active=true]:border-purple-400 data-[active=true]:font-semibold text-white/60 hover:text-white hover:bg-purple-500/8 transition-all pl-3">
+                        <Link href="/admin" onClick={handleLinkClick}>
+                          <Shield className="w-4 h-4" />
+                          <span className="text-sm">Project Hub</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
                     <SidebarMenuItem>
                       <SidebarMenuButton asChild isActive={location === "/activity"} className="h-10 rounded-xl data-[active=true]:bg-purple-500/15 data-[active=true]:text-purple-300 data-[active=true]:border-l-2 data-[active=true]:border-purple-400 data-[active=true]:font-semibold text-white/60 hover:text-white hover:bg-purple-500/8 transition-all pl-3">
                         <Link href="/activity" onClick={handleLinkClick}>
@@ -183,7 +178,7 @@ function AppLayoutInner({ children }: { children: ReactNode }) {
                   <div className="flex flex-col min-w-0">
                     <span className="text-sm font-medium leading-none text-white/90 truncate">{user?.name}</span>
                     <span className="mt-1">
-                      {user?.role === "admin" ? (
+                      {user?.role === "super_admin" ? (
                         <Badge className="text-[10px] h-4 px-1.5 bg-violet-500/20 border border-violet-500/40 hover:bg-violet-500/30 text-violet-300 gap-1 rounded font-medium">
                           <Shield className="h-2 w-2" /> Admin
                         </Badge>

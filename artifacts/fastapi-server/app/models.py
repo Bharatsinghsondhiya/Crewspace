@@ -8,9 +8,8 @@ class Base(DeclarativeBase):
     pass
 
 class UserRole(str, enum.Enum):
-    admin = "admin"
     user = "user"
-    member = "member"
+    super_admin = "super_admin"
 
 class User(Base):
     __tablename__ = "users"
@@ -18,7 +17,7 @@ class User(Base):
     name = Column(String(255), nullable=False)
     email = Column(String(255), nullable=False, unique=True)
     password_hash = Column(String(255), nullable=False)
-    role = Column(Enum(UserRole), nullable=False, default=UserRole.member)
+    role = Column(Enum(UserRole), nullable=False, default=UserRole.user)
     avatar_url = Column(Text, nullable=True)
     refresh_token = Column(Text, nullable=True)
     reset_token = Column(Text, nullable=True)
@@ -35,7 +34,7 @@ class WorkspaceMemberRole(str, enum.Enum):
 class ProjectMemberRole(str, enum.Enum):
     owner = "owner"
     admin = "admin"
-    collaborator = "collaborator"
+    member = "member"
 
 class Project(Base):
     __tablename__ = "projects"
@@ -52,7 +51,7 @@ class ProjectMember(Base):
     __tablename__ = "project_members"
     project_id = Column(Integer, ForeignKey("projects.id", ondelete="CASCADE"), primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
-    role = Column(Enum(ProjectMemberRole), nullable=False, default=ProjectMemberRole.collaborator)
+    role = Column(Enum(ProjectMemberRole), nullable=False, default=ProjectMemberRole.member)
     joined_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     project = relationship("Project")
@@ -164,7 +163,7 @@ class ProjectInvitation(Base):
     project_id = Column(Integer, ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
     email = Column(String(255), nullable=False)
     invited_by_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    role = Column(Enum(ProjectMemberRole), nullable=False, default=ProjectMemberRole.collaborator)
+    role = Column(Enum(ProjectMemberRole), nullable=False, default=ProjectMemberRole.member)
     token = Column(String(255), nullable=False, unique=True)
     expires_at = Column(DateTime(timezone=True), nullable=False)
     accepted = Column(Boolean, nullable=False, default=False)

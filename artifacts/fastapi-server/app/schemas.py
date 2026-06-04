@@ -14,9 +14,8 @@ class BaseSchema(BaseModel):
 
 # Common Enums
 class RoleEnum(str, Enum):
-    admin = 'admin'
     user = 'user'
-    member = 'member'
+    super_admin = 'super_admin'
 
 class WorkspaceRoleEnum(str, Enum):
     owner = 'owner'
@@ -27,7 +26,7 @@ class WorkspaceRoleEnum(str, Enum):
 class ProjectRoleEnum(str, Enum):
     owner = 'owner'
     admin = 'admin'
-    collaborator = 'collaborator'
+    member = 'member'
 
 class TaskStatusEnum(str, Enum):
     pending = 'pending'
@@ -68,7 +67,6 @@ class SignupBody(BaseSchema):
     name: str = Field(min_length=2)
     email: EmailStr
     password: str = Field(min_length=8)
-    role: Optional[RoleEnum] = RoleEnum.user
 
 class ChangePasswordBody(BaseSchema):
     current_password: str
@@ -154,7 +152,7 @@ class ProjectMemberResponse(BaseSchema):
 
 class InviteProjectMemberBody(BaseSchema):
     email: EmailStr
-    role: ProjectRoleEnum = ProjectRoleEnum.collaborator
+    role: ProjectRoleEnum = ProjectRoleEnum.member
 
 class UpdateProjectMemberRoleBody(BaseSchema):
     role: ProjectRoleEnum

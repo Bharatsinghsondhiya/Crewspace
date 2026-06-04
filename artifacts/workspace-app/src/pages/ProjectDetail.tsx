@@ -1,4 +1,4 @@
-import { useGetProject, useGetProjectMembers, useAddProjectMember, useRemoveProjectMember, useListWorkspaces, useCreateWorkspace, useUpdateProject, useAdminListUsers, getGetProjectMembersQueryKey, getListWorkspacesQueryKey, getGetProjectQueryKey } from "@workspace/api-client-react";
+import { useGetProject, useGetProjectMembers, useAddProjectMember, useRemoveProjectMember, useListWorkspaces, useCreateWorkspace, useUpdateProject, getGetProjectMembersQueryKey, getListWorkspacesQueryKey, getGetProjectQueryKey } from "@workspace/api-client-react";
 import { useRoute, Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -47,7 +47,6 @@ export default function ProjectDetail() {
   const { data: project, isLoading: isProjectLoading } = useGetProject(projectId);
   const { data: members, isLoading: isMembersLoading } = useGetProjectMembers(projectId);
   const { data: allWorkspaces, isLoading: isWorkspacesLoading } = useListWorkspaces({});
-  const { data: allUsers } = useAdminListUsers({});
   
   const projectWorkspaces = allWorkspaces?.filter((w: any) => w.projectId === projectId) || [];
 
@@ -254,21 +253,10 @@ export default function ProjectDetail() {
                   <form onSubmit={memberForm.handleSubmit(onInviteSubmit)} className="space-y-4 pt-4">
                     <FormField control={memberForm.control} name="email" render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-white/70">Select Platform User</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger className="bg-white/5 border-white/10 text-white rounded-xl">
-                              <SelectValue placeholder="Select a user to invite" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="bg-[#0a0518] border-white/10 text-white max-h-60">
-                            {allUsers?.map((u: any) => (
-                              <SelectItem key={u.id} value={u.email}>
-                                {u.name} ({u.email})
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <FormLabel className="text-white/70">Invitee Email Address</FormLabel>
+                        <FormControl>
+                          <Input type="email" placeholder="colleague@example.com" {...field} className="bg-white/5 border-white/10 text-white rounded-xl focus-visible:ring-purple-500/50" />
+                        </FormControl>
                         <FormMessage className="text-red-400" />
                       </FormItem>
                     )} />

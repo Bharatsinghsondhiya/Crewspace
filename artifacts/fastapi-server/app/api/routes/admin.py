@@ -13,7 +13,7 @@ router = APIRouter()
 @router.get("/stats", response_model=AdminStatsResponse)
 async def get_admin_stats(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     # Only return real stats if admin
-    if current_user.role.value != "admin":
+    if current_user.role.value != "super_admin":
         return AdminStatsResponse(
             total_users=0, total_workspaces=0, total_tasks=0, 
             completed_tasks=0, active_users=0, users_by_role=[], tasks_by_status=[]
@@ -44,7 +44,7 @@ from app.schemas import UserResponse
 
 @router.get("/users", response_model=list[UserResponse])
 async def admin_list_users(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    if current_user.role.value != "admin":
+    if current_user.role.value != "super_admin":
         return []
     result = await db.execute(select(User))
     return result.scalars().all()
@@ -56,7 +56,7 @@ class UpdateRoleBody(BaseModel):
 @router.patch("/users/{user_id}/role", response_model=UserResponse)
 async def admin_update_user_role(user_id: int, body: UpdateRoleBody, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     from app.models import UserRole
-    if current_user.role.value != "admin":
+    if current_user.role.value != "super_admin":
         raise HTTPException(status_code=403, detail="Forbidden")
     user = await db.scalar(select(User).where(User.id == user_id))
     user.role = UserRole(body.role)
@@ -65,7 +65,7 @@ async def admin_update_user_role(user_id: int, body: UpdateRoleBody, current_use
 
 @router.delete("/users/{user_id}")
 async def admin_delete_user(user_id: int, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    if current_user.role.value != "admin":
+    if current_user.role.value != "super_admin":
         raise HTTPException(status_code=403, detail="Forbidden")
     user = await db.scalar(select(User).where(User.id == user_id))
     await db.delete(user)

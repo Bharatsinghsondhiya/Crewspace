@@ -82,10 +82,10 @@ function Router() {
         <ProtectedRoute><AppLayout><Settings /></AppLayout></ProtectedRoute>
       </Route>
       <Route path="/admin">
-        <ProtectedRoute adminOnly><AppLayout><Admin /></AppLayout></ProtectedRoute>
+        <ProtectedRoute><AppLayout><Admin /></AppLayout></ProtectedRoute>
       </Route>
       <Route path="/admin/projects/:id">
-        <ProtectedRoute adminOnly><AppLayout><ProjectDetail /></AppLayout></ProtectedRoute>
+        <ProtectedRoute><AppLayout><ProjectDetail /></AppLayout></ProtectedRoute>
       </Route>
       <Route path="/invites/:token">
         <AcceptInvite />

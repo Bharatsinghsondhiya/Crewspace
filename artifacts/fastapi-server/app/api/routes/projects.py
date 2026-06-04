@@ -22,12 +22,11 @@ from datetime import datetime, timedelta, timezone
 router = APIRouter()
 
 def require_admin(user: User):
-    if user.role != UserRole.admin:
+    if user.role != UserRole.super_admin:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only platform admins can manage projects")
 
 @router.post("", response_model=ProjectResponseItem, status_code=status.HTTP_201_CREATED)
 async def create_project(body: CreateProjectBody, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
-    require_admin(current_user)
     
     project = Project(
         name=body.name,
@@ -58,7 +57,7 @@ async def get_projects(db: AsyncSession = Depends(get_db), current_user: User = 
         .outerjoin(pm, (Project.id == pm.project_id) & (pm.user_id == current_user.id))
     )
     
-    if current_user.role != UserRole.admin:
+    if current_user.role != UserRole.super_admin:
         stmt = stmt.filter(pm.user_id == current_user.id)
         
     result = await db.execute(stmt)
@@ -79,7 +78,7 @@ async def get_project(project_id: int, db: AsyncSession = Depends(get_db), curre
     if not project:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
         
-    if current_user.role != UserRole.admin:
+    if current_user.role != UserRole.super_admin:
         member_stmt = select(ProjectMember).filter(ProjectMember.project_id == project_id, ProjectMember.user_id == current_user.id)
         member_res = await db.execute(member_stmt)
         member = member_res.scalar_one_or_none()
@@ -108,7 +107,7 @@ async def update_project(project_id: int, body: UpdateProjectBody, db: AsyncSess
     member_res = await db.execute(member_stmt)
     member = member_res.scalar_one_or_none()
     
-    if current_user.role != UserRole.admin and (not member or member.role not in [ProjectMemberRole.owner, ProjectMemberRole.admin]):
+    if current_user.role != UserRole.super_admin and (not member or member.role not in [ProjectMemberRole.owner, ProjectMemberRole.admin]):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to update project")
 
     if body.name is not None:
@@ -132,7 +131,7 @@ async def delete_project(project_id: int, db: AsyncSession = Depends(get_db), cu
     member_res = await db.execute(member_stmt)
     member = member_res.scalar_one_or_none()
     
-    if current_user.role != UserRole.admin and (not member or member.role != ProjectMemberRole.owner):
+    if current_user.role != UserRole.super_admin and (not member or member.role != ProjectMemberRole.owner):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only owner can delete project")
 
     await db.delete(project)
@@ -141,7 +140,7 @@ async def delete_project(project_id: int, db: AsyncSession = Depends(get_db), cu
 
 @router.get("/{project_id}/members", response_model=List[ProjectMemberResponse])
 async def get_project_members(project_id: int, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
-    if current_user.role != UserRole.admin:
+    if current_user.role != UserRole.super_admin:
         member_stmt = select(ProjectMember).filter(ProjectMember.project_id == project_id, ProjectMember.user_id == current_user.id)
         member_res = await db.execute(member_stmt)
         if not member_res.scalar_one_or_none():
@@ -163,7 +162,7 @@ async def add_project_member(project_id: int, body: InviteProjectMemberBody, db:
     member_res = await db.execute(member_stmt)
     member = member_res.scalar_one_or_none()
     
-    if current_user.role != UserRole.admin and (not member or member.role not in [ProjectMemberRole.owner, ProjectMemberRole.admin]):
+    if current_user.role != UserRole.super_admin and (not member or member.role not in [ProjectMemberRole.owner, ProjectMemberRole.admin]):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to invite members")
 
     user_stmt = select(User).where(User.email == body.email)
@@ -218,7 +217,7 @@ async def accept_project_invite(token: str, db: AsyncSession = Depends(get_db), 
     if not invitation:
         raise HTTPException(status_code=404, detail="Invitation not found")
         
-    if invitation.email != current_user.email:
+    if invitation.email.lower() != current_user.email.lower():
         raise HTTPException(status_code=403, detail="Not authorized to accept this invitation")
         
     if invitation.accepted:
@@ -247,7 +246,7 @@ async def remove_project_member(project_id: int, user_id: int, db: AsyncSession 
     member_res = await db.execute(member_stmt)
     member = member_res.scalar_one_or_none()
     
-    if current_user.role != UserRole.admin and (not member or member.role not in [ProjectMemberRole.owner, ProjectMemberRole.admin]):
+    if current_user.role != UserRole.super_admin and (not member or member.role not in [ProjectMemberRole.owner, ProjectMemberRole.admin]):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to remove members")
 
     rm_stmt = select(ProjectMember).filter(ProjectMember.project_id == project_id, ProjectMember.user_id == user_id)
@@ -270,7 +269,7 @@ async def update_project_member_role(project_id: int, user_id: int, body: Update
     member_res = await db.execute(member_stmt)
     member = member_res.scalar_one_or_none()
     
-    if current_user.role != UserRole.admin and (not member or member.role not in [ProjectMemberRole.owner, ProjectMemberRole.admin]):
+    if current_user.role != UserRole.super_admin and (not member or member.role not in [ProjectMemberRole.owner, ProjectMemberRole.admin]):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to update roles")
 
     from sqlalchemy.orm import selectinload
