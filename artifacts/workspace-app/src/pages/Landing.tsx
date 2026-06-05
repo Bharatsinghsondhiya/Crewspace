@@ -44,7 +44,7 @@ const AnimatedHeroUI = () => {
         </div>
         <div className="text-purple-300/70 text-xs flex items-center gap-2">
           <Activity size={12} className="text-purple-400" />
-          System Active
+          System Online
         </div>
       </div>
       
