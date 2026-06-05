@@ -145,7 +145,13 @@ function MemberDashboard() {
               </div>
               <div className="space-y-3">
                 {summary.recentActivity?.length === 0 ? (
-                  <p className="text-white/40 text-sm text-center py-8">No recent activity</p>
+                  <div className="flex flex-col items-center justify-center py-10 text-center">
+                    <div className="w-12 h-12 bg-purple-500/10 rounded-full flex items-center justify-center mb-3 border border-purple-500/20">
+                      <Clock className="w-5 h-5 text-purple-400/50" />
+                    </div>
+                    <p className="text-white/70 text-sm font-medium">No recent activity</p>
+                    <p className="text-white/40 text-xs mt-1">Actions taken by you or your team will appear here.</p>
+                  </div>
                 ) : (
                   summary.recentActivity?.slice(0, 5).map((activity: any) => (
                     <div key={activity.id} className="flex items-start gap-3">
