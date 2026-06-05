@@ -116,12 +116,13 @@ export default function Workspaces() {
       ) : workspaces && workspaces.length > 0 ? (
         <>
           {/* Promo Banner */}
+
           <div className="rounded-[2.5rem] border border-fuchsia-500/30 p-8 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden shadow-[0_0_50px_rgba(217,70,239,0.15)] group"
             style={{ background: "linear-gradient(135deg, rgba(20,10,40,0.95) 0%, rgba(40,15,60,0.95) 100%)" }}>
             <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-600/10 to-blue-600/10 pointer-events-none group-hover:from-fuchsia-600/20 group-hover:to-blue-600/20 transition-all duration-700" />
             <div className="absolute -top-24 -right-24 w-64 h-64 bg-fuchsia-500/20 rounded-full blur-[80px] pointer-events-none" />
             <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-blue-500/20 rounded-full blur-[80px] pointer-events-none" />
-            
+
             <div className="flex-1 z-10 relative">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-fuchsia-300 text-xs font-semibold mb-4 backdrop-blur-md">
                 <span className="w-1.5 h-1.5 rounded-full bg-fuchsia-400 animate-pulse" /> Platform Features
@@ -139,14 +140,16 @@ export default function Workspaces() {
                 ))}
               </div>
             </div>
+
             <div className="hidden md:flex w-64 h-48 items-center justify-center z-10 relative perspective-[1000px]">
               {/* Abstract illustration */}
+
               <div className="relative w-full h-full transform-gpu rotate-y-[-10deg] rotate-x-[5deg] group-hover:rotate-y-[-5deg] group-hover:rotate-x-[2deg] transition-all duration-700">
                 <div className="absolute inset-0 rounded-2xl border border-fuchsia-500/30 shadow-[0_0_30px_rgba(217,70,239,0.2)] bg-black/40 backdrop-blur-xl" />
                 <div className="absolute top-6 left-6 w-32 h-4 rounded-full bg-fuchsia-500/30 shadow-[0_0_10px_rgba(217,70,239,0.4)]" />
                 <div className="absolute top-14 left-6 w-20 h-3 rounded-full bg-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.4)]" />
                 <div className="absolute top-22 left-6 w-24 h-3 rounded-full bg-purple-500/40 shadow-[0_0_10px_rgba(168,85,247,0.4)]" />
-                
+
                 <div className="absolute bottom-6 right-6 w-12 h-12 rounded-2xl bg-blue-500/20 border border-blue-500/40 shadow-[0_0_20px_rgba(59,130,246,0.4)] flex items-center justify-center">
                   <Users className="w-6 h-6 text-blue-400" />
                 </div>
@@ -192,10 +195,18 @@ export default function Workspaces() {
           </div>
         </>
       ) : (
-        <div className="text-center py-20 rounded-2xl border border-white/8" style={{ background: "rgba(20, 12, 45, 0.7)" }}>
-          <Briefcase className="mx-auto h-12 w-12 text-purple-400/40 mb-4" />
-          <h3 className="text-lg font-semibold text-white">No workspaces yet</h3>
-          <p className="mt-2 text-white/40 text-sm">Create your first workspace to get started.</p>
+        <div className="text-center py-24 rounded-3xl border border-white/10 shadow-2xl relative overflow-hidden" style={{ background: "rgba(20, 12, 45, 0.7)" }}>
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent pointer-events-none" />
+          <div className="w-20 h-20 mx-auto bg-purple-500/10 rounded-full flex items-center justify-center mb-6 border border-purple-500/20 shadow-[0_0_30px_rgba(168,85,247,0.15)] relative">
+            <Briefcase className="h-8 w-8 text-purple-400" />
+            <div className="absolute top-0 right-0 w-3 h-3 bg-fuchsia-500 rounded-full animate-ping" />
+            <div className="absolute top-0 right-0 w-3 h-3 bg-fuchsia-500 rounded-full" />
+          </div>
+          <h3 className="text-xl font-bold text-white mb-2 tracking-tight">No workspaces yet</h3>
+          <p className="text-white/50 text-sm mb-8 max-w-sm mx-auto">Create your first workspace to start collaborating with your team and managing your projects.</p>
+          <Button onClick={() => setOpen(true)} className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white border-0 shadow-[0_0_20px_rgba(139,92,246,0.3)] rounded-xl font-semibold px-6 py-2 h-auto">
+            <Plus className="mr-2 h-5 w-5" /> Initialize Workspace
+          </Button>
         </div>
       )}
     </div>
