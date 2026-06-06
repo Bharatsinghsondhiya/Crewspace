@@ -258,11 +258,11 @@ export default function ProjectDetail() {
       </div>
 
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="bg-black/40 border border-white/10 p-1 rounded-xl h-12 w-full justify-start max-w-2xl overflow-x-auto custom-scrollbar flex-shrink-0">
-          <TabsTrigger value="overview" className="rounded-lg text-white/70 data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all h-9 px-6"><BarChart2 className="w-4 h-4 mr-2" /> Overview</TabsTrigger>
-          <TabsTrigger value="workshops" className="rounded-lg text-white/70 data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all h-9 px-6"><Briefcase className="w-4 h-4 mr-2" /> Workshops</TabsTrigger>
-          <TabsTrigger value="members" className="rounded-lg text-white/70 data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all h-9 px-6"><Users className="w-4 h-4 mr-2" /> Members</TabsTrigger>
-          <TabsTrigger value="settings" className="rounded-lg text-white/70 data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all h-9 px-6"><Settings2 className="w-4 h-4 mr-2" /> Settings</TabsTrigger>
+        <TabsList className="bg-black/40 border border-white/10 p-1.5 rounded-2xl h-auto w-full flex justify-start overflow-x-auto custom-scrollbar flex-nowrap sm:flex-wrap gap-1">
+          <TabsTrigger value="overview" className="rounded-xl text-white/70 data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all h-10 px-4 sm:px-6 whitespace-nowrap shrink-0"><BarChart2 className="w-4 h-4 mr-2 shrink-0" /> Overview</TabsTrigger>
+          <TabsTrigger value="workshops" className="rounded-xl text-white/70 data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all h-10 px-4 sm:px-6 whitespace-nowrap shrink-0"><Briefcase className="w-4 h-4 mr-2 shrink-0" /> Workshops</TabsTrigger>
+          <TabsTrigger value="members" className="rounded-xl text-white/70 data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all h-10 px-4 sm:px-6 whitespace-nowrap shrink-0"><Users className="w-4 h-4 mr-2 shrink-0" /> Members</TabsTrigger>
+          <TabsTrigger value="settings" className="rounded-xl text-white/70 data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all h-10 px-4 sm:px-6 whitespace-nowrap shrink-0"><Settings2 className="w-4 h-4 mr-2 shrink-0" /> Settings</TabsTrigger>
         </TabsList>
         
         <TabsContent value="overview" className="mt-6 space-y-6 animate-in fade-in slide-in-from-bottom-4">
@@ -376,23 +376,23 @@ export default function ProjectDetail() {
           ) : (
             <div className="grid gap-4">
               {members?.map((m: any) => (
-                <div key={m.userId} className="bg-black/40 border border-white/10 rounded-xl p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center border border-purple-500/30 text-purple-300 font-bold">
+                <div key={m.userId} className="bg-black/40 border border-white/10 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-4 w-full sm:w-auto">
+                    <div className="w-10 h-10 rounded-full bg-purple-500/20 flex shrink-0 items-center justify-center border border-purple-500/30 text-purple-300 font-bold">
                       {m.user?.name?.charAt(0).toUpperCase()}
                     </div>
-                    <div>
-                      <div className="font-medium text-white">{m.user?.name}</div>
-                      <div className="text-xs text-white/50">{m.user?.email}</div>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium text-white truncate">{m.user?.name}</div>
+                      <div className="text-xs text-white/50 truncate">{m.user?.email}</div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <Badge variant="outline" className="border-purple-500/30 text-purple-300 bg-purple-500/10">
+                  <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+                    <Badge variant="outline" className="border-purple-500/30 text-purple-300 bg-purple-500/10 shrink-0">
                       {m.role === "owner" ? <ShieldAlert className="w-3 h-3 mr-1" /> : <Shield className="w-3 h-3 mr-1" />}
                       {m.role}
                     </Badge>
                     {m.role !== "owner" && (
-                      <Button variant="ghost" size="icon" onClick={() => onRemoveMember(m.userId)} className="text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded-lg">
+                      <Button variant="ghost" size="icon" onClick={() => onRemoveMember(m.userId)} className="text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded-lg shrink-0 h-8 w-8">
                         <Trash className="w-4 h-4" />
                       </Button>
                     )}
