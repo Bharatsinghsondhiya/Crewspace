@@ -205,7 +205,14 @@ async def add_project_member(project_id: int, body: InviteProjectMemberBody, db:
     )
     db.add(notification)
     
-    await db.commit()
+    try:
+        await db.commit()
+    except Exception as e:
+        await db.rollback()
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Database Error: {str(e)}")
+        
     return MessageResponse(message="Invitation sent successfully")
 
 @router.post("/invitations/{token}/accept", response_model=MessageResponse)
