@@ -150,6 +150,7 @@ export default function ProjectDetail() {
 
   const [createWsOpen, setCreateWsOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [isDescExpanded, setIsDescExpanded] = useState(false);
 
   const { data: project, isLoading: isProjectLoading } = useGetProject(projectId);
   const { data: members, isLoading: isMembersLoading } = useGetProjectMembers(projectId);
@@ -233,8 +234,17 @@ export default function ProjectDetail() {
     <div className="p-5 md:p-8 space-y-8 max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="bg-black/40 backdrop-blur-3xl border border-white/10 rounded-3xl p-6 md:p-8 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 rounded-full blur-[100px] pointer-events-none" />
-        <h1 className="text-3xl font-bold tracking-tight text-white mb-2">{project.name}</h1>
-        <p className="text-white/60">{project.description || "No briefing provided."}</p>
+        <h1 className="text-3xl font-bold tracking-tight text-white mb-2 break-words">{project.name}</h1>
+        <div className="text-white/60 break-words">
+          <p className={isDescExpanded ? "" : "line-clamp-3"}>
+            {project.description || "No briefing provided."}
+          </p>
+          {project.description && project.description.length > 150 && (
+            <button onClick={() => setIsDescExpanded(!isDescExpanded)} className="text-purple-400 hover:text-purple-300 text-sm mt-1 transition-colors font-medium">
+              {isDescExpanded ? "Read less" : "Read more"}
+            </button>
+          )}
+        </div>
         <div className="flex gap-4 mt-6">
           <div className="bg-white/5 rounded-xl px-4 py-2 border border-white/10 flex items-center gap-2">
             <Briefcase className="w-4 h-4 text-purple-400" />

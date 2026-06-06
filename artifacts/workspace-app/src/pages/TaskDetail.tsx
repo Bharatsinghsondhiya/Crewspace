@@ -225,23 +225,28 @@ export default function TaskDetail() {
         <Card className="lg:col-span-2 bg-black/40 backdrop-blur-3xl border-white/10 shadow-[0_15px_40px_-10px_rgba(0,0,0,0.5)] rounded-[2.5rem] overflow-hidden relative group">
           <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-[80px] pointer-events-none group-hover:bg-indigo-500/20 transition-all duration-700" />
           <CardHeader className="border-b border-white/5 p-8 relative z-10 space-y-2">
-            <Input 
+            <Textarea 
               value={title} 
               onChange={e => {
-                if (e.target.value.length <= 100) setTitle(e.target.value);
+                if (e.target.value.length <= 150) {
+                  setTitle(e.target.value);
+                  e.target.style.height = 'auto';
+                  e.target.style.height = e.target.scrollHeight + 'px';
+                }
               }} 
-              maxLength={100}
+              maxLength={150}
+              rows={1}
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
+                if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
                   handleSaveText();
                 }
               }}
-              className="text-3xl md:text-4xl font-extrabold tracking-tight h-auto py-2 border-transparent hover:border-white/10 focus:border-purple-500/50 bg-transparent text-white placeholder:text-white/30 shadow-none px-2 rounded-xl focus-visible:ring-0 focus-visible:bg-white/5 transition-all"
+              className="text-3xl md:text-4xl font-extrabold tracking-tight h-auto py-2 border-transparent hover:border-white/10 focus:border-purple-500/50 bg-transparent text-white placeholder:text-white/30 shadow-none px-2 rounded-xl focus-visible:ring-0 focus-visible:bg-white/5 transition-all resize-none overflow-hidden"
             />
             <div className="flex justify-end px-2">
-              <span className={`text-xs font-medium ${title.length >= 100 ? "text-red-400" : "text-white/30"}`}>
-                {title.length} / 100
+              <span className={`text-xs font-medium ${title.length >= 150 ? "text-red-400" : "text-white/30"}`}>
+                {title.length} / 150
               </span>
             </div>
           </CardHeader>
