@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Plus, Users, ShieldAlert, Shield, Briefcase, Trash, UserPlus, Settings2, BarChart2 } from "lucide-react";
 import { toast } from "sonner";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -35,6 +35,113 @@ const settingsSchema = z.object({
   description: z.string().optional(),
 });
 type SettingsFormValues = z.infer<typeof settingsSchema>;
+
+function InviteProjectModalContent({ projectId, members, setInviteOpen }: { projectId: number, members: any[], setInviteOpen: (open: boolean) => void }) {
+  const [search, setSearch] = useState("");
+  const [role, setRole] = useState("member");
+  const [invitingEmail, setInvitingEmail] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const inviteMutation = useAddProjectMember();
+
+  const { data: users, isLoading, isError } = useQuery({
+    queryKey: ["users", search],
+    queryFn: async () => {
+      const token = localStorage.getItem("accessToken");
+      const baseUrl = import.meta.env.VITE_API_URL || "";
+      const res = await fetch(`${baseUrl}/api/users?query=${encodeURIComponent(search)}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error("Failed to search users");
+      return res.json();
+    }
+  });
+
+  const onInvite = (email: string) => {
+    setInvitingEmail(email);
+    inviteMutation.mutate(
+      { projectId, data: { email, role: role as any } },
+      {
+        onSuccess: () => {
+          toast.success("Invitation sent to user!");
+          setInvitingEmail(null);
+          queryClient.invalidateQueries({ queryKey: ["users"] });
+          queryClient.invalidateQueries({ queryKey: getGetProjectMembersQueryKey(projectId) });
+        },
+        onError: (err: any) => {
+          setInvitingEmail(null);
+          toast.error(err?.response?.data?.detail || "Failed to invite member.");
+        },
+      }
+    );
+  };
+
+  return (
+    <div className="space-y-5 pt-4">
+      <div className="flex flex-col sm:flex-row gap-4 sm:items-end">
+        <div className="space-y-2 flex-1 min-w-0">
+          <label className="text-sm font-medium text-white/70">Search Users</label>
+          <Input 
+            placeholder="Search by name or email..." 
+            value={search} 
+            onChange={(e) => setSearch(e.target.value)}
+            className="bg-white/5 border-white/10 text-white rounded-xl focus-visible:ring-purple-500/50"
+          />
+        </div>
+        <div className="space-y-2 w-full sm:w-[150px] shrink-0">
+          <label className="text-sm font-medium text-white/70">Role</label>
+          <Select value={role} onValueChange={setRole}>
+            <SelectTrigger className="bg-white/5 border-white/10 text-white rounded-xl focus:ring-purple-500/50"><SelectValue /></SelectTrigger>
+            <SelectContent className="bg-[#0a0518] border-white/10 text-white">
+              <SelectItem value="admin" className="focus:bg-white/10 focus:text-white">Admin</SelectItem>
+              <SelectItem value="member" className="focus:bg-white/10 focus:text-white">Member</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="mt-4 border border-white/10 rounded-xl p-3 h-[250px] overflow-y-auto bg-black/40 backdrop-blur-xl custom-scrollbar">
+        <h4 className="text-sm font-medium text-white/50 mb-3 px-1">Platform Users</h4>
+        {isLoading ? (
+          <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-purple-400" /></div>
+        ) : isError ? (
+          <div className="text-center p-4 text-sm text-red-400 bg-red-500/10 rounded-lg">Error loading users. Backend might be restarting.</div>
+        ) : (!users || users.length === 0) ? (
+          <div className="text-center p-8 text-sm text-white/30 border border-white/5 border-dashed rounded-lg">User not found on platform</div>
+        ) : (
+          <div className="space-y-2">
+            {users.map((u: any) => {
+              const isMember = members.some((m: any) => m.userId === u.id);
+              return (
+                <div key={u.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-transparent hover:border-white/10 transition-all">
+                  <div className="min-w-0">
+                    <div className="font-medium text-sm text-white truncate">{u.name}</div>
+                    <div className="text-xs text-white/50 truncate">{u.email}</div>
+                  </div>
+                  <div className="shrink-0 flex justify-end">
+                    {isMember ? (
+                      <Badge variant="outline" className="border-white/10 text-white/40 bg-white/5 whitespace-nowrap">Already in project</Badge>
+                    ) : (
+                      <Button 
+                        size="sm" 
+                        onClick={() => onInvite(u.email)}
+                        disabled={inviteMutation.isPending}
+                        className="bg-purple-600 hover:bg-purple-500 text-white rounded-lg shadow-[0_0_10px_rgba(168,85,247,0.3)] w-full sm:w-auto"
+                      >
+                        {invitingEmail === u.email ? (
+                          <><Loader2 className="w-3 h-3 mr-2 animate-spin" /> Inviting...</>
+                        ) : "Invite"}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function ProjectDetail() {
   const [, params] = useRoute("/admin/projects/:id");
@@ -249,40 +356,7 @@ export default function ProjectDetail() {
                 <DialogHeader>
                   <DialogTitle>Invite to Project</DialogTitle>
                 </DialogHeader>
-                <Form {...memberForm}>
-                  <form onSubmit={memberForm.handleSubmit(onInviteSubmit)} className="space-y-4 pt-4">
-                    <FormField control={memberForm.control} name="email" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-white/70">Invitee Email Address</FormLabel>
-                        <FormControl>
-                          <Input type="email" placeholder="colleague@example.com" {...field} className="bg-white/5 border-white/10 text-white rounded-xl focus-visible:ring-purple-500/50" />
-                        </FormControl>
-                        <FormMessage className="text-red-400" />
-                      </FormItem>
-                    )} />
-                    <FormField control={memberForm.control} name="role" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-white/70">Project Role</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger className="bg-white/5 border-white/10 text-white rounded-xl">
-                              <SelectValue placeholder="Select a role" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="bg-[#0a0518] border-white/10 text-white">
-                            <SelectItem value="admin">Project Admin</SelectItem>
-                            <SelectItem value="collaborator">Collaborator</SelectItem>
-                            <SelectItem value="guest">Guest</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage className="text-red-400" />
-                      </FormItem>
-                    )} />
-                    <Button type="submit" disabled={inviteMutation.isPending} className="w-full bg-purple-600 hover:bg-purple-500 text-white rounded-xl mt-2 h-11">
-                      {inviteMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : "Send Invite"}
-                    </Button>
-                  </form>
-                </Form>
+                <InviteProjectModalContent projectId={projectId} members={members || []} setInviteOpen={setInviteOpen} />
               </DialogContent>
             </Dialog>
           </div>

@@ -193,7 +193,7 @@ async def add_project_member(project_id: int, body: InviteProjectMemberBody, db:
     
     # Create notification with JSON message payload to store token
     message_payload = {
-        "text": f"You have been invited to join project '{project.name}' as a {body.role.value}.",
+        "text": f"You have been invited to join project '{project.name}' as a {body.role}.",
         "token": token,
         "projectId": project_id
     }
