@@ -1,7 +1,7 @@
 import { useAuth } from "@/context/AuthContext";
 import { useGetDashboardSummary } from "@workspace/api-client-react";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Circle, Layout, Shield, Users, Briefcase, BarChart3, Bell, Loader2, AlertCircle, Clock, FolderGit2 } from "lucide-react";
+import { CheckCircle2, Circle, Layout, Shield, Users, Briefcase, BarChart3, Bell, Loader2, AlertCircle, Clock, FolderGit2, type LucideIcon } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 // Colored icon box matching the screenshot
 function StatCard({ label, value, sub, icon: Icon, iconBg, iconColor }: {
   label: string; value: number | string; sub: string;
-  icon: any; iconBg: string; iconColor: string;
+  icon: LucideIcon; iconBg: string; iconColor: string;
 }) {
   return (
     <div className="rounded-2xl p-5 flex flex-col gap-3 border border-white/8 transition-all hover:-translate-y-0.5 hover:border-purple-500/20"
