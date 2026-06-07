@@ -4,8 +4,8 @@ from sqlalchemy.future import select
 from typing import List
 
 from app.db.database import get_db
-from app.api.deps import get_current_user
-from app.models import User, Project, ProjectMember, ProjectMemberRole, UserRole, ProjectInvitation, Notification, NotificationType
+from app.api.deps import get_current_user, verify_workspace_admin, verify_project_member, verify_project_admin
+from app.models import User, Project, ProjectMember, ProjectMemberRole, ProjectInvitation, Notification, NotificationType, Task, TaskStatus, TaskPriority, ActivityLog
 from app.schemas import (
     ProjectResponseItem, 
     CreateProjectBody, 
@@ -13,7 +13,8 @@ from app.schemas import (
     ProjectMemberResponse, 
     InviteProjectMemberBody,
     UpdateProjectMemberRoleBody,
-    MessageResponse
+    MessageResponse,
+    TaskResponseItem, CreateTaskBody, UpdateTaskBody
 )
 import secrets
 import json
@@ -22,15 +23,18 @@ from datetime import datetime, timedelta, timezone
 router = APIRouter()
 
 def require_admin(user: User):
-    if user.role != UserRole.super_admin:
+    if not user.is_super_admin:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only platform admins can manage projects")
 
 @router.post("", response_model=ProjectResponseItem, status_code=status.HTTP_201_CREATED)
 async def create_project(body: CreateProjectBody, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
     
+    await verify_workspace_admin(workspace_id=body.workspace_id, current_user=current_user, db=db)
+    
     project = Project(
         name=body.name,
         description=body.description,
+        workspace_id=body.workspace_id,
         created_by_id=current_user.id
     )
     db.add(project)
@@ -40,7 +44,7 @@ async def create_project(body: CreateProjectBody, db: AsyncSession = Depends(get
     member = ProjectMember(
         project_id=project.id,
         user_id=current_user.id,
-        role=ProjectMemberRole.owner
+        role=ProjectMemberRole.admin
     )
     db.add(member)
     await db.commit()
@@ -57,7 +61,7 @@ async def get_projects(db: AsyncSession = Depends(get_db), current_user: User = 
         .outerjoin(pm, (Project.id == pm.project_id) & (pm.user_id == current_user.id))
     )
     
-    if current_user.role != UserRole.super_admin:
+    if not current_user.is_super_admin:
         stmt = stmt.filter(pm.user_id == current_user.id)
         
     result = await db.execute(stmt)
@@ -78,7 +82,7 @@ async def get_project(project_id: int, db: AsyncSession = Depends(get_db), curre
     if not project:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
         
-    if current_user.role != UserRole.super_admin:
+    if not current_user.is_super_admin:
         member_stmt = select(ProjectMember).filter(ProjectMember.project_id == project_id, ProjectMember.user_id == current_user.id)
         member_res = await db.execute(member_stmt)
         member = member_res.scalar_one_or_none()
@@ -107,7 +111,7 @@ async def update_project(project_id: int, body: UpdateProjectBody, db: AsyncSess
     member_res = await db.execute(member_stmt)
     member = member_res.scalar_one_or_none()
     
-    if current_user.role != UserRole.super_admin and (not member or member.role not in [ProjectMemberRole.owner, ProjectMemberRole.admin]):
+    if not current_user.is_super_admin and (not member or member.role != ProjectMemberRole.admin):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to update project")
 
     if body.name is not None:
@@ -131,7 +135,7 @@ async def delete_project(project_id: int, db: AsyncSession = Depends(get_db), cu
     member_res = await db.execute(member_stmt)
     member = member_res.scalar_one_or_none()
     
-    if current_user.role != UserRole.super_admin and (not member or member.role != ProjectMemberRole.owner):
+    if not current_user.is_super_admin and (not member or member.role != ProjectMemberRole.admin):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only owner can delete project")
 
     await db.delete(project)
@@ -140,7 +144,7 @@ async def delete_project(project_id: int, db: AsyncSession = Depends(get_db), cu
 
 @router.get("/{project_id}/members", response_model=List[ProjectMemberResponse])
 async def get_project_members(project_id: int, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
-    if current_user.role != UserRole.super_admin:
+    if not current_user.is_super_admin:
         member_stmt = select(ProjectMember).filter(ProjectMember.project_id == project_id, ProjectMember.user_id == current_user.id)
         member_res = await db.execute(member_stmt)
         if not member_res.scalar_one_or_none():
@@ -162,7 +166,7 @@ async def add_project_member(project_id: int, body: InviteProjectMemberBody, db:
     member_res = await db.execute(member_stmt)
     member = member_res.scalar_one_or_none()
     
-    if current_user.role != UserRole.super_admin and (not member or member.role not in [ProjectMemberRole.owner, ProjectMemberRole.admin]):
+    if not current_user.is_super_admin and (not member or member.role != ProjectMemberRole.admin):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to invite members")
 
     user_stmt = select(User).where(User.email == body.email)
@@ -253,7 +257,7 @@ async def remove_project_member(project_id: int, user_id: int, db: AsyncSession 
     member_res = await db.execute(member_stmt)
     member = member_res.scalar_one_or_none()
     
-    if current_user.role != UserRole.super_admin and (not member or member.role not in [ProjectMemberRole.owner, ProjectMemberRole.admin]):
+    if not current_user.is_super_admin and (not member or member.role != ProjectMemberRole.admin):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to remove members")
 
     rm_stmt = select(ProjectMember).filter(ProjectMember.project_id == project_id, ProjectMember.user_id == user_id)
@@ -263,7 +267,7 @@ async def remove_project_member(project_id: int, user_id: int, db: AsyncSession 
     if not member_to_remove:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Member not found")
 
-    if member_to_remove.role == ProjectMemberRole.owner:
+    if member_to_remove.role == ProjectMemberRole.admin:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot remove owner")
 
     await db.delete(member_to_remove)
@@ -276,7 +280,7 @@ async def update_project_member_role(project_id: int, user_id: int, body: Update
     member_res = await db.execute(member_stmt)
     member = member_res.scalar_one_or_none()
     
-    if current_user.role != UserRole.super_admin and (not member or member.role not in [ProjectMemberRole.owner, ProjectMemberRole.admin]):
+    if not current_user.is_super_admin and (not member or member.role != ProjectMemberRole.admin):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to update roles")
 
     from sqlalchemy.orm import selectinload
@@ -287,10 +291,101 @@ async def update_project_member_role(project_id: int, user_id: int, body: Update
     if not member_to_update:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Member not found")
 
-    if member_to_update.role == ProjectMemberRole.owner:
+    if member_to_update.role == ProjectMemberRole.admin:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot change owner role")
 
     member_to_update.role = body.role
     await db.commit()
     await db.refresh(member_to_update)
     return member_to_update
+
+@router.get("/{project_id}/tasks", response_model=List[TaskResponseItem])
+async def list_project_tasks(project_id: int, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user), _ = Depends(verify_project_member)):
+    from sqlalchemy.orm import selectinload
+    stmt = select(Task).options(selectinload(Task.assignee), selectinload(Task.created_by)).where(Task.project_id == project_id)
+    result = await db.execute(stmt)
+    return result.scalars().all()
+
+@router.post("/{project_id}/tasks", response_model=TaskResponseItem)
+async def create_task(project_id: int, task_in: CreateTaskBody, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user), _ = Depends(verify_project_member)):
+    from sqlalchemy.orm import selectinload
+    project = await db.scalar(select(Project).where(Project.id == project_id))
+    task = Task(
+        title=task_in.title,
+        description=task_in.description,
+        status=TaskStatus(task_in.status),
+        priority=TaskPriority(task_in.priority),
+        assignee_id=task_in.assignee_id,
+        project_id=project_id,
+        created_by_id=current_user.id
+    )
+    db.add(task)
+    await db.commit()
+    await db.refresh(task)
+    
+    activity = ActivityLog(
+        action="created task",
+        entity_type="task",
+        entity_id=task.id,
+        user_id=current_user.id,
+        workspace_id=project.workspace_id if project else None,
+        description=f"Task '{task.title}' was created"
+    )
+    db.add(activity)
+    await db.commit()
+    
+    stmt = select(Task).options(selectinload(Task.assignee), selectinload(Task.created_by)).where(Task.id == task.id)
+    task = await db.scalar(stmt)
+    return task
+
+@router.patch("/{project_id}/tasks/{task_id}", response_model=TaskResponseItem)
+async def update_task(project_id: int, task_id: int, task_in: UpdateTaskBody, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user), member = Depends(verify_project_member)):
+    from sqlalchemy.orm import selectinload
+    task = await db.scalar(select(Task).options(selectinload(Task.project)).where(Task.id == task_id))
+    if not task or task.project_id != project_id:
+        raise HTTPException(404, "Task not found in this project")
+        
+    update_data = task_in.model_dump(exclude_unset=True)
+    
+    if "title" in update_data: task.title = update_data["title"]
+    if "description" in update_data: task.description = update_data["description"]
+    if "status" in update_data: 
+        val = update_data["status"]
+        task.status = TaskStatus(val.value if hasattr(val, "value") else val)
+    if "priority" in update_data: 
+        val = update_data["priority"]
+        task.priority = TaskPriority(val.value if hasattr(val, "value") else val)
+    if "assignee_id" in update_data: task.assignee_id = update_data["assignee_id"]
+    if "due_date" in update_data: task.due_date = update_data["due_date"]
+    
+    activity = ActivityLog(
+        action="updated task",
+        entity_type="task",
+        entity_id=task.id,
+        user_id=current_user.id,
+        workspace_id=task.project.workspace_id if task.project else None,
+        description=f"Task '{task.title}' was updated"
+    )
+    db.add(activity)
+    await db.commit()
+    
+    stmt = select(Task).options(selectinload(Task.assignee), selectinload(Task.created_by)).where(Task.id == task_id)
+    return await db.scalar(stmt)
+
+@router.get("/{project_id}/tasks/{task_id}", response_model=TaskResponseItem)
+async def get_task(project_id: int, task_id: int, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user), _ = Depends(verify_project_member)):
+    from sqlalchemy.orm import selectinload
+    stmt = select(Task).options(selectinload(Task.assignee), selectinload(Task.created_by)).where(Task.id == task_id)
+    task = await db.scalar(stmt)
+    if not task or task.project_id != project_id:
+        raise HTTPException(404, "Task not found in this project")
+    return task
+
+@router.delete("/{project_id}/tasks/{task_id}")
+async def delete_task(project_id: int, task_id: int, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user), _ = Depends(verify_project_admin)):
+    task = await db.scalar(select(Task).where(Task.id == task_id))
+    if not task or task.project_id != project_id:
+        raise HTTPException(404, "Task not found in this project")
+    await db.delete(task)
+    await db.commit()
+    return {"message": "Task deleted"}

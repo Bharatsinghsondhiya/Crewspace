@@ -8,7 +8,7 @@ from typing import List, Callable
 from app.db.database import get_db
 from app.core.config import settings
 from app.core import security
-from app.models import User, WorkspaceMember
+from app.models import User, WorkspaceMember, ProjectMember
 
 # This automatically looks for the Authorization: Bearer <token> header
 oauth2_scheme = OAuth2PasswordBearer(
@@ -79,3 +79,38 @@ def require_workspace_role(allowed_roles: List[str]) -> Callable:
             
         return member
     return role_checker
+
+def require_project_role(allowed_roles: List[str]) -> Callable:
+    async def role_checker(
+        project_id: int,
+        current_user: User = Depends(get_current_user),
+        db: AsyncSession = Depends(get_db)
+    ) -> ProjectMember:
+        stmt = select(ProjectMember).filter(
+            ProjectMember.project_id == project_id,
+            ProjectMember.user_id == current_user.id
+        )
+        result = await db.execute(stmt)
+        member = result.scalars().first()
+        
+        if current_user.role.value == "super_admin":
+            return member # super_admin has access to all
+            
+        if not member:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You are not a member of this project"
+            )
+            
+        if member.role.value not in allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Requires one of roles: {', '.join(allowed_roles)}"
+            )
+            
+        return member
+    return role_checker
+
+verify_workspace_admin = require_workspace_role(["owner", "manager"])
+verify_project_member = require_project_role(["owner", "admin", "member"])
+verify_project_admin = require_project_role(["owner", "admin"])

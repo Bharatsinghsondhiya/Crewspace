@@ -9,16 +9,6 @@ from app.core.cache import init_redis, close_redis
 async def lifespan(app: FastAPI):
     # Startup: Connect to Redis
     await init_redis()
-    
-    try:
-        from app.db.database import engine
-        import sqlalchemy as sa
-        async with engine.begin() as conn:
-            await conn.execute(sa.text("ALTER TABLE users MODIFY COLUMN role ENUM('admin', 'user', 'member') NOT NULL DEFAULT 'member';"))
-            print("Successfully updated users role enum")
-    except Exception as e:
-        print(f"Error updating enum: {e}")
-        
     yield
     # Shutdown: Disconnect from Redis safely
     await close_redis()

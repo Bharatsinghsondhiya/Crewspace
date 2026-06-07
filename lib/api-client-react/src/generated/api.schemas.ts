@@ -51,6 +51,7 @@ export interface CreateProjectBody {
   /** @minLength 1 */
   name: string;
   description?: string | null;
+  workspaceId: number;
 }
 
 export type TaskStatusEnum = typeof TaskStatusEnum[keyof typeof TaskStatusEnum];
@@ -78,6 +79,7 @@ export interface CreateTaskBody {
   status?: TaskStatusEnum;
   priority?: TaskPriorityEnum;
   dueDate?: string | null;
+  projectId: number;
   assigneeId?: number | null;
   labels?: string[] | null;
 }
@@ -86,7 +88,6 @@ export interface CreateWorkspaceBody {
   /** @minLength 1 */
   name: string;
   description?: string | null;
-  projectId?: number | null;
 }
 
 export interface DashboardSummaryResponse {
@@ -117,7 +118,7 @@ export type WorkspaceRoleEnum = typeof WorkspaceRoleEnum[keyof typeof WorkspaceR
 
 export const WorkspaceRoleEnum = {
   owner: 'owner',
-  manager: 'manager',
+  admin: 'admin',
   member: 'member',
   viewer: 'viewer',
 } as const;
@@ -131,9 +132,8 @@ export type ProjectRoleEnum = typeof ProjectRoleEnum[keyof typeof ProjectRoleEnu
 
 
 export const ProjectRoleEnum = {
-  owner: 'owner',
   admin: 'admin',
-  collaborator: 'collaborator',
+  member: 'member',
 } as const;
 
 export interface InviteProjectMemberBody {
@@ -146,20 +146,11 @@ export interface LoginBody {
   password: string;
 }
 
-export type RoleEnum = typeof RoleEnum[keyof typeof RoleEnum];
-
-
-export const RoleEnum = {
-  admin: 'admin',
-  user: 'user',
-  member: 'member',
-} as const;
-
 export interface UserResponse {
   id: number;
   name: string;
   email: string;
-  role: RoleEnum;
+  isSuperAdmin: boolean;
   avatarUrl?: string | null;
   createdAt: string;
 }
@@ -209,6 +200,7 @@ export interface ProjectResponseItem {
   id: number;
   name: string;
   description?: string | null;
+  workspaceId: number;
   createdById: number;
   createdAt: string;
   updatedAt?: string | null;
@@ -219,6 +211,10 @@ export interface ProjectResponseItem {
 
 export interface ResetPasswordBody {
   token: string;
+  /**
+     * Password must be at least 8 characters
+     * @minLength 8
+     */
   password: string;
 }
 
@@ -228,7 +224,6 @@ export interface SignupBody {
   email: string;
   /** @minLength 8 */
   password: string;
-  role?: RoleEnum | null;
 }
 
 export interface TaskCountByUser {
@@ -246,7 +241,7 @@ export interface TaskResponseItem {
   status: TaskStatusEnum;
   priority: TaskPriorityEnum;
   dueDate?: string | null;
-  workspaceId: number;
+  projectId: number;
   assigneeId?: number | null;
   createdById: number;
   labels?: string[] | null;
@@ -271,7 +266,7 @@ export interface UpdateProjectMemberRoleBody {
 }
 
 export interface UpdateRoleBody {
-  role: string;
+  is_super_admin: boolean;
 }
 
 export interface UpdateTaskBody {
@@ -324,7 +319,6 @@ export interface WorkspaceResponseItem {
   name: string;
   description?: string | null;
   ownerId: number;
-  projectId?: number | null;
   memberCount?: number | null;
   taskCount?: number | null;
   createdAt: string;
@@ -335,6 +329,10 @@ role: string;
 };
 
 export type SearchUsersParams = {
+/**
+ * Scope search to a specific workspace
+ */
+workspace_id: number;
 /**
  * @minLength 0
  */

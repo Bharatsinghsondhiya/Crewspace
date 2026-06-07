@@ -13,21 +13,34 @@ router = APIRouter()
 
 @router.get("", response_model=List[UserResponse])
 async def search_users(
+    workspace_id: int = Query(..., description="Scope search to a specific workspace"),
     query: str = Query("", min_length=0),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    from app.models import UserRole
-    from sqlalchemy import and_
+    from app.models import WorkspaceMember
+    from sqlalchemy import or_
+    from fastapi import HTTPException
     
-    if not query:
-        stmt = select(User).limit(50)
-    else:
+    # Verify current user is part of the workspace or super admin
+    member = await db.scalar(select(WorkspaceMember).where(
+        WorkspaceMember.workspace_id == workspace_id,
+        WorkspaceMember.user_id == current_user.id
+    ))
+    if not member and not current_user.is_super_admin:
+        raise HTTPException(status_code=403, detail="Not authorized to search this workspace")
+        
+    stmt = select(User).join(WorkspaceMember, User.id == WorkspaceMember.user_id).where(
+        WorkspaceMember.workspace_id == workspace_id
+    )
+    
+    if query:
         search = f"%{query}%"
-        stmt = select(User).where(or_(
+        stmt = stmt.where(or_(
             User.name.ilike(search),
             User.email.ilike(search)
-        )).limit(50)
+        ))
         
+    stmt = stmt.limit(50)
     result = await db.execute(stmt)
     return result.scalars().all()

@@ -309,5 +309,5 @@ function AdminDashboard() {
 
 export default function Dashboard() {
   const { user } = useAuth();
-  return user?.role === "admin" ? <AdminDashboard /> : <MemberDashboard />;
+  return user?.isSuperAdmin ? <AdminDashboard /> : <MemberDashboard />;
 }

@@ -498,6 +498,83 @@ export const useResetPassword = <TError = ErrorType<HTTPValidationError>,
       return useMutation(getResetPasswordMutationOptions(options));
     }
 
+export const getDbTestUrl = () => {
+
+
+
+
+  return `/api/auth/db-test`
+}
+
+/**
+ * @summary Db Test
+ */
+export const dbTest = async ( options?: RequestInit): Promise<unknown> => {
+
+  return customFetch<unknown>(getDbTestUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getDbTestQueryKey = () => {
+    return [
+    `/api/auth/db-test`
+    ] as const;
+    }
+
+
+export const getDbTestQueryOptions = <TData = Awaited<ReturnType<typeof dbTest>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof dbTest>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getDbTestQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof dbTest>>> = ({ signal }) => dbTest({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof dbTest>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type DbTestQueryResult = NonNullable<Awaited<ReturnType<typeof dbTest>>>
+export type DbTestQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Db Test
+ */
+
+export function useDbTest<TData = Awaited<ReturnType<typeof dbTest>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof dbTest>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getDbTestQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
 export const getUpdateProfileUrl = () => {
 
 
@@ -1156,20 +1233,20 @@ export const useCreateInvite = <TError = ErrorType<HTTPValidationError>,
       return useMutation(getCreateInviteMutationOptions(options));
     }
 
-export const getListWorkspaceTasksUrl = (workspaceId: number,) => {
+export const getListWorkspaceProjectsUrl = (workspaceId: number,) => {
 
 
 
 
-  return `/api/workspaces/${workspaceId}/tasks`
+  return `/api/workspaces/${workspaceId}/projects`
 }
 
 /**
- * @summary List Workspace Tasks
+ * @summary List Workspace Projects
  */
-export const listWorkspaceTasks = async (workspaceId: number, options?: RequestInit): Promise<TaskResponseItem[]> => {
+export const listWorkspaceProjects = async (workspaceId: number, options?: RequestInit): Promise<ProjectResponseItem[]> => {
 
-  return customFetch<TaskResponseItem[]>(getListWorkspaceTasksUrl(workspaceId),
+  return customFetch<ProjectResponseItem[]>(getListWorkspaceProjectsUrl(workspaceId),
   {
     ...options,
     method: 'GET'
@@ -1182,45 +1259,45 @@ export const listWorkspaceTasks = async (workspaceId: number, options?: RequestI
 
 
 
-export const getListWorkspaceTasksQueryKey = (workspaceId: number,) => {
+export const getListWorkspaceProjectsQueryKey = (workspaceId: number,) => {
     return [
-    `/api/workspaces/${workspaceId}/tasks`
+    `/api/workspaces/${workspaceId}/projects`
     ] as const;
     }
 
 
-export const getListWorkspaceTasksQueryOptions = <TData = Awaited<ReturnType<typeof listWorkspaceTasks>>, TError = ErrorType<HTTPValidationError>>(workspaceId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listWorkspaceTasks>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getListWorkspaceProjectsQueryOptions = <TData = Awaited<ReturnType<typeof listWorkspaceProjects>>, TError = ErrorType<HTTPValidationError>>(workspaceId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listWorkspaceProjects>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListWorkspaceTasksQueryKey(workspaceId);
+  const queryKey =  queryOptions?.queryKey ?? getListWorkspaceProjectsQueryKey(workspaceId);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listWorkspaceTasks>>> = ({ signal }) => listWorkspaceTasks(workspaceId, { signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listWorkspaceProjects>>> = ({ signal }) => listWorkspaceProjects(workspaceId, { signal, ...requestOptions });
 
 
 
 
 
-   return  { queryKey, queryFn, enabled: !!(workspaceId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listWorkspaceTasks>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: !!(workspaceId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listWorkspaceProjects>>, TError, TData> & { queryKey: QueryKey }
 }
 
-export type ListWorkspaceTasksQueryResult = NonNullable<Awaited<ReturnType<typeof listWorkspaceTasks>>>
-export type ListWorkspaceTasksQueryError = ErrorType<HTTPValidationError>
+export type ListWorkspaceProjectsQueryResult = NonNullable<Awaited<ReturnType<typeof listWorkspaceProjects>>>
+export type ListWorkspaceProjectsQueryError = ErrorType<HTTPValidationError>
 
 
 /**
- * @summary List Workspace Tasks
+ * @summary List Workspace Projects
  */
 
-export function useListWorkspaceTasks<TData = Awaited<ReturnType<typeof listWorkspaceTasks>>, TError = ErrorType<HTTPValidationError>>(
- workspaceId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listWorkspaceTasks>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export function useListWorkspaceProjects<TData = Awaited<ReturnType<typeof listWorkspaceProjects>>, TError = ErrorType<HTTPValidationError>>(
+ workspaceId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listWorkspaceProjects>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
-  const queryOptions = getListWorkspaceTasksQueryOptions(workspaceId,options)
+  const queryOptions = getListWorkspaceProjectsQueryOptions(workspaceId,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
@@ -1232,306 +1309,6 @@ export function useListWorkspaceTasks<TData = Awaited<ReturnType<typeof listWork
 
 
 
-
-export const getCreateTaskUrl = (workspaceId: number,) => {
-
-
-
-
-  return `/api/workspaces/${workspaceId}/tasks`
-}
-
-/**
- * @summary Create Task
- */
-export const createTask = async (workspaceId: number,
-    createTaskBody: CreateTaskBody, options?: RequestInit): Promise<TaskResponseItem> => {
-
-  return customFetch<TaskResponseItem>(getCreateTaskUrl(workspaceId),
-  {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(
-      createTaskBody,)
-  }
-);}
-
-
-
-
-export const getCreateTaskMutationOptions = <TError = ErrorType<HTTPValidationError>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTask>>, TError,{workspaceId: number;data: BodyType<CreateTaskBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof createTask>>, TError,{workspaceId: number;data: BodyType<CreateTaskBody>}, TContext> => {
-
-const mutationKey = ['createTask'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createTask>>, {workspaceId: number;data: BodyType<CreateTaskBody>}> = (props) => {
-          const {workspaceId,data} = props ?? {};
-
-          return  createTask(workspaceId,data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type CreateTaskMutationResult = NonNullable<Awaited<ReturnType<typeof createTask>>>
-    export type CreateTaskMutationBody = BodyType<CreateTaskBody>
-    export type CreateTaskMutationError = ErrorType<HTTPValidationError>
-
-    /**
- * @summary Create Task
- */
-export const useCreateTask = <TError = ErrorType<HTTPValidationError>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTask>>, TError,{workspaceId: number;data: BodyType<CreateTaskBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof createTask>>,
-        TError,
-        {workspaceId: number;data: BodyType<CreateTaskBody>},
-        TContext
-      > => {
-      return useMutation(getCreateTaskMutationOptions(options));
-    }
-
-export const getUpdateTaskUrl = (workspaceId: number,
-    taskId: number,) => {
-
-
-
-
-  return `/api/workspaces/${workspaceId}/tasks/${taskId}`
-}
-
-/**
- * @summary Update Task
- */
-export const updateTask = async (workspaceId: number,
-    taskId: number,
-    updateTaskBody: UpdateTaskBody, options?: RequestInit): Promise<TaskResponseItem> => {
-
-  return customFetch<TaskResponseItem>(getUpdateTaskUrl(workspaceId,taskId),
-  {
-    ...options,
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(
-      updateTaskBody,)
-  }
-);}
-
-
-
-
-export const getUpdateTaskMutationOptions = <TError = ErrorType<HTTPValidationError>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTask>>, TError,{workspaceId: number;taskId: number;data: BodyType<UpdateTaskBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof updateTask>>, TError,{workspaceId: number;taskId: number;data: BodyType<UpdateTaskBody>}, TContext> => {
-
-const mutationKey = ['updateTask'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateTask>>, {workspaceId: number;taskId: number;data: BodyType<UpdateTaskBody>}> = (props) => {
-          const {workspaceId,taskId,data} = props ?? {};
-
-          return  updateTask(workspaceId,taskId,data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type UpdateTaskMutationResult = NonNullable<Awaited<ReturnType<typeof updateTask>>>
-    export type UpdateTaskMutationBody = BodyType<UpdateTaskBody>
-    export type UpdateTaskMutationError = ErrorType<HTTPValidationError>
-
-    /**
- * @summary Update Task
- */
-export const useUpdateTask = <TError = ErrorType<HTTPValidationError>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTask>>, TError,{workspaceId: number;taskId: number;data: BodyType<UpdateTaskBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof updateTask>>,
-        TError,
-        {workspaceId: number;taskId: number;data: BodyType<UpdateTaskBody>},
-        TContext
-      > => {
-      return useMutation(getUpdateTaskMutationOptions(options));
-    }
-
-export const getGetTaskUrl = (workspaceId: number,
-    taskId: number,) => {
-
-
-
-
-  return `/api/workspaces/${workspaceId}/tasks/${taskId}`
-}
-
-/**
- * @summary Get Task
- */
-export const getTask = async (workspaceId: number,
-    taskId: number, options?: RequestInit): Promise<TaskResponseItem> => {
-
-  return customFetch<TaskResponseItem>(getGetTaskUrl(workspaceId,taskId),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getGetTaskQueryKey = (workspaceId: number,
-    taskId: number,) => {
-    return [
-    `/api/workspaces/${workspaceId}/tasks/${taskId}`
-    ] as const;
-    }
-
-
-export const getGetTaskQueryOptions = <TData = Awaited<ReturnType<typeof getTask>>, TError = ErrorType<HTTPValidationError>>(workspaceId: number,
-    taskId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTask>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetTaskQueryKey(workspaceId,taskId);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTask>>> = ({ signal }) => getTask(workspaceId,taskId, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: !!(workspaceId && taskId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTask>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type GetTaskQueryResult = NonNullable<Awaited<ReturnType<typeof getTask>>>
-export type GetTaskQueryError = ErrorType<HTTPValidationError>
-
-
-/**
- * @summary Get Task
- */
-
-export function useGetTask<TData = Awaited<ReturnType<typeof getTask>>, TError = ErrorType<HTTPValidationError>>(
- workspaceId: number,
-    taskId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTask>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getGetTaskQueryOptions(workspaceId,taskId,options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
-
-  return { ...query, queryKey: queryOptions.queryKey };
-}
-
-
-
-
-
-
-
-export const getDeleteTaskUrl = (workspaceId: number,
-    taskId: number,) => {
-
-
-
-
-  return `/api/workspaces/${workspaceId}/tasks/${taskId}`
-}
-
-/**
- * @summary Delete Task
- */
-export const deleteTask = async (workspaceId: number,
-    taskId: number, options?: RequestInit): Promise<unknown> => {
-
-  return customFetch<unknown>(getDeleteTaskUrl(workspaceId,taskId),
-  {
-    ...options,
-    method: 'DELETE'
-
-
-  }
-);}
-
-
-
-
-export const getDeleteTaskMutationOptions = <TError = ErrorType<HTTPValidationError>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTask>>, TError,{workspaceId: number;taskId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteTask>>, TError,{workspaceId: number;taskId: number}, TContext> => {
-
-const mutationKey = ['deleteTask'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteTask>>, {workspaceId: number;taskId: number}> = (props) => {
-          const {workspaceId,taskId} = props ?? {};
-
-          return  deleteTask(workspaceId,taskId,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteTaskMutationResult = NonNullable<Awaited<ReturnType<typeof deleteTask>>>
-
-    export type DeleteTaskMutationError = ErrorType<HTTPValidationError>
-
-    /**
- * @summary Delete Task
- */
-export const useDeleteTask = <TError = ErrorType<HTTPValidationError>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTask>>, TError,{workspaceId: number;taskId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof deleteTask>>,
-        TError,
-        {workspaceId: number;taskId: number},
-        TContext
-      > => {
-      return useMutation(getDeleteTaskMutationOptions(options));
-    }
 
 export const getUpdateMemberRoleUrl = (workspaceId: number,
     userId: number,
@@ -2732,7 +2509,7 @@ export const useAcceptInvite = <TError = ErrorType<HTTPValidationError>,
       return useMutation(getAcceptInviteMutationOptions(options));
     }
 
-export const getSearchUsersUrl = (params?: SearchUsersParams,) => {
+export const getSearchUsersUrl = (params: SearchUsersParams,) => {
   const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
@@ -2750,7 +2527,7 @@ export const getSearchUsersUrl = (params?: SearchUsersParams,) => {
 /**
  * @summary Search Users
  */
-export const searchUsers = async (params?: SearchUsersParams, options?: RequestInit): Promise<UserResponse[]> => {
+export const searchUsers = async (params: SearchUsersParams, options?: RequestInit): Promise<UserResponse[]> => {
 
   return customFetch<UserResponse[]>(getSearchUsersUrl(params),
   {
@@ -2772,7 +2549,7 @@ export const getSearchUsersQueryKey = (params?: SearchUsersParams,) => {
     }
 
 
-export const getSearchUsersQueryOptions = <TData = Awaited<ReturnType<typeof searchUsers>>, TError = ErrorType<HTTPValidationError>>(params?: SearchUsersParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof searchUsers>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getSearchUsersQueryOptions = <TData = Awaited<ReturnType<typeof searchUsers>>, TError = ErrorType<HTTPValidationError>>(params: SearchUsersParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof searchUsers>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -2799,7 +2576,7 @@ export type SearchUsersQueryError = ErrorType<HTTPValidationError>
  */
 
 export function useSearchUsers<TData = Awaited<ReturnType<typeof searchUsers>>, TError = ErrorType<HTTPValidationError>>(
- params?: SearchUsersParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof searchUsers>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+ params: SearchUsersParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof searchUsers>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -3546,6 +3323,383 @@ export const useUpdateProjectMemberRole = <TError = ErrorType<HTTPValidationErro
         TContext
       > => {
       return useMutation(getUpdateProjectMemberRoleMutationOptions(options));
+    }
+
+export const getListProjectTasksUrl = (projectId: number,) => {
+
+
+
+
+  return `/api/projects/${projectId}/tasks`
+}
+
+/**
+ * @summary List Project Tasks
+ */
+export const listProjectTasks = async (projectId: number, options?: RequestInit): Promise<TaskResponseItem[]> => {
+
+  return customFetch<TaskResponseItem[]>(getListProjectTasksUrl(projectId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListProjectTasksQueryKey = (projectId: number,) => {
+    return [
+    `/api/projects/${projectId}/tasks`
+    ] as const;
+    }
+
+
+export const getListProjectTasksQueryOptions = <TData = Awaited<ReturnType<typeof listProjectTasks>>, TError = ErrorType<HTTPValidationError>>(projectId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listProjectTasks>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListProjectTasksQueryKey(projectId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listProjectTasks>>> = ({ signal }) => listProjectTasks(projectId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(projectId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listProjectTasks>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListProjectTasksQueryResult = NonNullable<Awaited<ReturnType<typeof listProjectTasks>>>
+export type ListProjectTasksQueryError = ErrorType<HTTPValidationError>
+
+
+/**
+ * @summary List Project Tasks
+ */
+
+export function useListProjectTasks<TData = Awaited<ReturnType<typeof listProjectTasks>>, TError = ErrorType<HTTPValidationError>>(
+ projectId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listProjectTasks>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListProjectTasksQueryOptions(projectId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateTaskUrl = (projectId: number,) => {
+
+
+
+
+  return `/api/projects/${projectId}/tasks`
+}
+
+/**
+ * @summary Create Task
+ */
+export const createTask = async (projectId: number,
+    createTaskBody: CreateTaskBody, options?: RequestInit): Promise<TaskResponseItem> => {
+
+  return customFetch<TaskResponseItem>(getCreateTaskUrl(projectId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      createTaskBody,)
+  }
+);}
+
+
+
+
+export const getCreateTaskMutationOptions = <TError = ErrorType<HTTPValidationError>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTask>>, TError,{projectId: number;data: BodyType<CreateTaskBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createTask>>, TError,{projectId: number;data: BodyType<CreateTaskBody>}, TContext> => {
+
+const mutationKey = ['createTask'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createTask>>, {projectId: number;data: BodyType<CreateTaskBody>}> = (props) => {
+          const {projectId,data} = props ?? {};
+
+          return  createTask(projectId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateTaskMutationResult = NonNullable<Awaited<ReturnType<typeof createTask>>>
+    export type CreateTaskMutationBody = BodyType<CreateTaskBody>
+    export type CreateTaskMutationError = ErrorType<HTTPValidationError>
+
+    /**
+ * @summary Create Task
+ */
+export const useCreateTask = <TError = ErrorType<HTTPValidationError>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTask>>, TError,{projectId: number;data: BodyType<CreateTaskBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createTask>>,
+        TError,
+        {projectId: number;data: BodyType<CreateTaskBody>},
+        TContext
+      > => {
+      return useMutation(getCreateTaskMutationOptions(options));
+    }
+
+export const getUpdateTaskUrl = (projectId: number,
+    taskId: number,) => {
+
+
+
+
+  return `/api/projects/${projectId}/tasks/${taskId}`
+}
+
+/**
+ * @summary Update Task
+ */
+export const updateTask = async (projectId: number,
+    taskId: number,
+    updateTaskBody: UpdateTaskBody, options?: RequestInit): Promise<TaskResponseItem> => {
+
+  return customFetch<TaskResponseItem>(getUpdateTaskUrl(projectId,taskId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      updateTaskBody,)
+  }
+);}
+
+
+
+
+export const getUpdateTaskMutationOptions = <TError = ErrorType<HTTPValidationError>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTask>>, TError,{projectId: number;taskId: number;data: BodyType<UpdateTaskBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateTask>>, TError,{projectId: number;taskId: number;data: BodyType<UpdateTaskBody>}, TContext> => {
+
+const mutationKey = ['updateTask'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateTask>>, {projectId: number;taskId: number;data: BodyType<UpdateTaskBody>}> = (props) => {
+          const {projectId,taskId,data} = props ?? {};
+
+          return  updateTask(projectId,taskId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateTaskMutationResult = NonNullable<Awaited<ReturnType<typeof updateTask>>>
+    export type UpdateTaskMutationBody = BodyType<UpdateTaskBody>
+    export type UpdateTaskMutationError = ErrorType<HTTPValidationError>
+
+    /**
+ * @summary Update Task
+ */
+export const useUpdateTask = <TError = ErrorType<HTTPValidationError>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTask>>, TError,{projectId: number;taskId: number;data: BodyType<UpdateTaskBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateTask>>,
+        TError,
+        {projectId: number;taskId: number;data: BodyType<UpdateTaskBody>},
+        TContext
+      > => {
+      return useMutation(getUpdateTaskMutationOptions(options));
+    }
+
+export const getGetTaskUrl = (projectId: number,
+    taskId: number,) => {
+
+
+
+
+  return `/api/projects/${projectId}/tasks/${taskId}`
+}
+
+/**
+ * @summary Get Task
+ */
+export const getTask = async (projectId: number,
+    taskId: number, options?: RequestInit): Promise<TaskResponseItem> => {
+
+  return customFetch<TaskResponseItem>(getGetTaskUrl(projectId,taskId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetTaskQueryKey = (projectId: number,
+    taskId: number,) => {
+    return [
+    `/api/projects/${projectId}/tasks/${taskId}`
+    ] as const;
+    }
+
+
+export const getGetTaskQueryOptions = <TData = Awaited<ReturnType<typeof getTask>>, TError = ErrorType<HTTPValidationError>>(projectId: number,
+    taskId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTask>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetTaskQueryKey(projectId,taskId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTask>>> = ({ signal }) => getTask(projectId,taskId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(projectId && taskId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTask>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetTaskQueryResult = NonNullable<Awaited<ReturnType<typeof getTask>>>
+export type GetTaskQueryError = ErrorType<HTTPValidationError>
+
+
+/**
+ * @summary Get Task
+ */
+
+export function useGetTask<TData = Awaited<ReturnType<typeof getTask>>, TError = ErrorType<HTTPValidationError>>(
+ projectId: number,
+    taskId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTask>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetTaskQueryOptions(projectId,taskId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getDeleteTaskUrl = (projectId: number,
+    taskId: number,) => {
+
+
+
+
+  return `/api/projects/${projectId}/tasks/${taskId}`
+}
+
+/**
+ * @summary Delete Task
+ */
+export const deleteTask = async (projectId: number,
+    taskId: number, options?: RequestInit): Promise<unknown> => {
+
+  return customFetch<unknown>(getDeleteTaskUrl(projectId,taskId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteTaskMutationOptions = <TError = ErrorType<HTTPValidationError>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTask>>, TError,{projectId: number;taskId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteTask>>, TError,{projectId: number;taskId: number}, TContext> => {
+
+const mutationKey = ['deleteTask'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteTask>>, {projectId: number;taskId: number}> = (props) => {
+          const {projectId,taskId} = props ?? {};
+
+          return  deleteTask(projectId,taskId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteTaskMutationResult = NonNullable<Awaited<ReturnType<typeof deleteTask>>>
+
+    export type DeleteTaskMutationError = ErrorType<HTTPValidationError>
+
+    /**
+ * @summary Delete Task
+ */
+export const useDeleteTask = <TError = ErrorType<HTTPValidationError>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTask>>, TError,{projectId: number;taskId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteTask>>,
+        TError,
+        {projectId: number;taskId: number},
+        TContext
+      > => {
+      return useMutation(getDeleteTaskMutationOptions(options));
     }
 
 export const getRootUrl = () => {

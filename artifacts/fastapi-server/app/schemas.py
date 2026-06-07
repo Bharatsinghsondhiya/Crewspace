@@ -13,18 +13,15 @@ class BaseSchema(BaseModel):
     )
 
 # Common Enums
-class RoleEnum(str, Enum):
-    user = 'user'
-    super_admin = 'super_admin'
+
 
 class WorkspaceRoleEnum(str, Enum):
     owner = 'owner'
-    manager = 'manager'
+    admin = 'admin'
     member = 'member'
     viewer = 'viewer'
 
 class ProjectRoleEnum(str, Enum):
-    owner = 'owner'
     admin = 'admin'
     member = 'member'
 
@@ -50,7 +47,7 @@ class UserResponse(BaseSchema):
     id: int
     name: str
     email: EmailStr
-    role: RoleEnum
+    is_super_admin: bool
     avatar_url: Optional[str] = None
     created_at: datetime
 
@@ -85,7 +82,6 @@ class WorkspaceResponseItem(BaseSchema):
     name: str
     description: Optional[str] = None
     owner_id: int
-    project_id: Optional[int] = None
     member_count: Optional[int] = None
     task_count: Optional[int] = None
     created_at: datetime
@@ -93,7 +89,6 @@ class WorkspaceResponseItem(BaseSchema):
 class CreateWorkspaceBody(BaseSchema):
     name: str = Field(min_length=1)
     description: Optional[str] = None
-    project_id: Optional[int] = None
 
 class UpdateWorkspaceBody(BaseSchema):
     name: Optional[str] = Field(None, min_length=1)
@@ -128,6 +123,7 @@ class ProjectResponseItem(BaseSchema):
     id: int
     name: str
     description: Optional[str] = None
+    workspace_id: int
     created_by_id: int
     created_at: datetime
     updated_at: Optional[datetime] = None
@@ -138,6 +134,7 @@ class ProjectResponseItem(BaseSchema):
 class CreateProjectBody(BaseSchema):
     name: str = Field(min_length=1)
     description: Optional[str] = None
+    workspace_id: int
 
 class UpdateProjectBody(BaseSchema):
     name: Optional[str] = Field(None, min_length=1)
@@ -170,7 +167,7 @@ class TaskResponseItem(BaseSchema):
     status: TaskStatusEnum
     priority: TaskPriorityEnum
     due_date: Optional[datetime] = None
-    workspace_id: int
+    project_id: int
     assignee_id: Optional[int] = None
     created_by_id: int
     labels: Optional[List[str]] = None
@@ -196,6 +193,7 @@ class CreateTaskBody(BaseSchema):
     status: TaskStatusEnum = TaskStatusEnum.pending
     priority: TaskPriorityEnum = TaskPriorityEnum.medium
     due_date: Optional[datetime] = None
+    project_id: int
     assignee_id: Optional[int] = None
     labels: Optional[List[str]] = None
 

@@ -178,7 +178,7 @@ function AppLayoutInner({ children }: { children: ReactNode }) {
                   <div className="flex flex-col min-w-0">
                     <span className="text-sm font-medium leading-none text-white/90 truncate">{user?.name}</span>
                     <span className="mt-1">
-                      {user?.role === "super_admin" ? (
+                      {user?.isSuperAdmin ? (
                         <Badge className="text-[10px] h-4 px-1.5 bg-violet-500/20 border border-violet-500/40 hover:bg-violet-500/30 text-violet-300 gap-1 rounded font-medium">
                           <Shield className="h-2 w-2" /> Admin
                         </Badge>

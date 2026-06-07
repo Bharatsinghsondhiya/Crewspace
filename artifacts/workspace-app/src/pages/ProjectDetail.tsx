@@ -1,4 +1,4 @@
-import { useGetProject, useGetProjectMembers, useAddProjectMember, useRemoveProjectMember, useListWorkspaces, useCreateWorkspace, useUpdateProject, getGetProjectMembersQueryKey, getListWorkspacesQueryKey, getGetProjectQueryKey } from "@workspace/api-client-react";
+import { useGetProject, useGetProjectMembers, useAddProjectMember, useRemoveProjectMember, useListProjectTasks, useCreateTask, useUpdateProject, getGetProjectMembersQueryKey, getListProjectTasksQueryKey, getGetProjectQueryKey } from "@workspace/api-client-react";
 import { useRoute, Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 
 const workspaceSchema = z.object({
-  name: z.string().min(1, "Workshop name is required"),
+  title: z.string().min(1, "Task title is required"),
   description: z.string().optional(),
 });
 type WorkspaceFormValues = z.infer<typeof workspaceSchema>;
@@ -144,7 +144,7 @@ function InviteProjectModalContent({ projectId, members, setInviteOpen }: { proj
 }
 
 export default function ProjectDetail() {
-  const [, params] = useRoute("/admin/projects/:id");
+  const [, params] = useRoute("/projects/:id");
   const projectId = Number(params?.id);
   const queryClient = useQueryClient();
 
@@ -154,17 +154,17 @@ export default function ProjectDetail() {
 
   const { data: project, isLoading: isProjectLoading } = useGetProject(projectId);
   const { data: members, isLoading: isMembersLoading } = useGetProjectMembers(projectId);
-  const { data: allWorkspaces, isLoading: isWorkspacesLoading } = useListWorkspaces({});
+  const { data: allWorkspaces, isLoading: isWorkspacesLoading } = useListProjectTasks(projectId, {});
   
-  const projectWorkspaces = allWorkspaces?.filter((w: any) => w.projectId === projectId) || [];
+  const projectTasks = allWorkspaces || [];
 
-  const createWsMutation = useCreateWorkspace();
+  const createTaskMutation = useCreateTask();
   const inviteMutation = useAddProjectMember();
   const removeMemberMutation = useRemoveProjectMember();
 
   const updateMutation = useUpdateProject();
 
-  const wsForm = useForm<WorkspaceFormValues>({
+  const taskForm = useForm<WorkspaceFormValues>({
     resolver: zodResolver(workspaceSchema),
     defaultValues: { name: "", description: "" },
   });
@@ -183,12 +183,12 @@ export default function ProjectDetail() {
   });
 
   const onWsSubmit = (data: WorkspaceFormValues) => {
-    createWsMutation.mutate({ data: { ...data, projectId } }, {
+    createTaskMutation.mutate({ data: { ...data, projectId } }, {
       onSuccess: () => {
-        toast.success("Workshop created successfully!");
+        toast.success("Task created successfully!");
         setCreateWsOpen(false);
-        wsForm.reset();
-        queryClient.invalidateQueries({ queryKey: getListWorkspacesQueryKey() });
+        taskForm.reset();
+        queryClient.invalidateQueries({ queryKey: getListProjectTasksQueryKey(projectId) });
       }
     });
   };
@@ -248,7 +248,7 @@ export default function ProjectDetail() {
         <div className="flex gap-4 mt-6">
           <div className="bg-white/5 rounded-xl px-4 py-2 border border-white/10 flex items-center gap-2">
             <Briefcase className="w-4 h-4 text-purple-400" />
-            <span className="text-white text-sm">{projectWorkspaces.length} Workshops</span>
+            <span className="text-white text-sm">{projectTasks.length} Tasks</span>
           </div>
           <div className="bg-white/5 rounded-xl px-4 py-2 border border-white/10 flex items-center gap-2">
             <Users className="w-4 h-4 text-purple-400" />
@@ -260,7 +260,7 @@ export default function ProjectDetail() {
       <Tabs defaultValue="overview" className="w-full">
         <TabsList className="bg-black/40 border border-white/10 p-1.5 rounded-2xl h-auto w-full flex justify-start overflow-x-auto custom-scrollbar flex-nowrap sm:flex-wrap gap-1">
           <TabsTrigger value="overview" className="rounded-xl text-white/70 data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all h-10 px-4 sm:px-6 whitespace-nowrap shrink-0"><BarChart2 className="w-4 h-4 mr-2 shrink-0" /> Overview</TabsTrigger>
-          <TabsTrigger value="workshops" className="rounded-xl text-white/70 data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all h-10 px-4 sm:px-6 whitespace-nowrap shrink-0"><Briefcase className="w-4 h-4 mr-2 shrink-0" /> Workshops</TabsTrigger>
+          <TabsTrigger value="workshops" className="rounded-xl text-white/70 data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all h-10 px-4 sm:px-6 whitespace-nowrap shrink-0"><Briefcase className="w-4 h-4 mr-2 shrink-0" /> Tasks</TabsTrigger>
           <TabsTrigger value="members" className="rounded-xl text-white/70 data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all h-10 px-4 sm:px-6 whitespace-nowrap shrink-0"><Users className="w-4 h-4 mr-2 shrink-0" /> Members</TabsTrigger>
           <TabsTrigger value="settings" className="rounded-xl text-white/70 data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all h-10 px-4 sm:px-6 whitespace-nowrap shrink-0"><Settings2 className="w-4 h-4 mr-2 shrink-0" /> Settings</TabsTrigger>
         </TabsList>
@@ -270,8 +270,8 @@ export default function ProjectDetail() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card className="bg-black/40 border-white/10">
               <CardHeader className="pb-2">
-                <CardDescription className="text-white/50 uppercase tracking-widest text-xs font-semibold">Total Workshops</CardDescription>
-                <CardTitle className="text-4xl text-white font-black">{projectWorkspaces.length}</CardTitle>
+                <CardDescription className="text-white/50 uppercase tracking-widest text-xs font-semibold">Total Tasks</CardDescription>
+                <CardTitle className="text-4xl text-white font-black">{projectTasks.length}</CardTitle>
               </CardHeader>
             </Card>
             <Card className="bg-black/40 border-white/10">
@@ -288,29 +288,29 @@ export default function ProjectDetail() {
         
         <TabsContent value="workshops" className="mt-6 space-y-6">
           <div className="flex justify-between items-center">
-            <h2 className="text-xl font-bold text-white">Project Workshops</h2>
+            <h2 className="text-xl font-bold text-white">Project Tasks</h2>
             <Dialog open={createWsOpen} onOpenChange={setCreateWsOpen}>
               <DialogTrigger asChild>
                 <Button className="bg-purple-600 hover:bg-purple-500 text-white rounded-xl shadow-[0_0_15px_rgba(139,92,246,0.3)]">
-                  <Plus className="w-4 h-4 mr-2" /> Initialize Workshop
+                  <Plus className="w-4 h-4 mr-2" /> Initialize Task
                 </Button>
               </DialogTrigger>
               <DialogContent className="bg-[#0a0518] border-white/10 text-white rounded-2xl sm:max-w-md">
                 <DialogHeader>
-                  <DialogTitle>New Workshop</DialogTitle>
+                  <DialogTitle>New Task</DialogTitle>
                 </DialogHeader>
-                <Form {...wsForm}>
-                  <form onSubmit={wsForm.handleSubmit(onWsSubmit)} className="space-y-4 pt-4">
-                    <FormField control={wsForm.control} name="name" render={({ field }) => (
+                <Form {...taskForm}>
+                  <form onSubmit={taskForm.handleSubmit(onWsSubmit)} className="space-y-4 pt-4">
+                    <FormField control={taskForm.control} name="name" render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-white/70">Workshop Name</FormLabel>
+                        <FormLabel className="text-white/70">Task Name</FormLabel>
                         <FormControl>
                           <Input placeholder="e.g. Design Team" {...field} className="bg-white/5 border-white/10 text-white rounded-xl" />
                         </FormControl>
                         <FormMessage className="text-red-400" />
                       </FormItem>
                     )} />
-                    <FormField control={wsForm.control} name="description" render={({ field }) => (
+                    <FormField control={taskForm.control} name="description" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-white/70">Description</FormLabel>
                         <FormControl>
@@ -319,8 +319,8 @@ export default function ProjectDetail() {
                         <FormMessage className="text-red-400" />
                       </FormItem>
                     )} />
-                    <Button type="submit" disabled={createWsMutation.isPending} className="w-full bg-purple-600 hover:bg-purple-500 text-white rounded-xl mt-2 h-11">
-                      {createWsMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : "Create Workshop"}
+                    <Button type="submit" disabled={createTaskMutation.isPending} className="w-full bg-purple-600 hover:bg-purple-500 text-white rounded-xl mt-2 h-11">
+                      {createTaskMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : "Create Task"}
                     </Button>
                   </form>
                 </Form>
@@ -330,13 +330,13 @@ export default function ProjectDetail() {
 
           {isWorkspacesLoading ? (
             <div className="flex justify-center"><Loader2 className="w-6 h-6 animate-spin text-purple-400" /></div>
-          ) : projectWorkspaces.length === 0 ? (
+          ) : projectTasks.length === 0 ? (
             <div className="text-center p-12 border border-white/5 border-dashed rounded-3xl bg-white/[0.02]">
               <p className="text-white/40">No workshops exist in this project yet.</p>
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {projectWorkspaces.map((ws: any) => (
+              {projectTasks.map((ws: any) => (
                 <Link key={ws.id} href={`/workspaces/${ws.id}`}>
                   <Card className="bg-black/40 border-white/10 rounded-2xl flex flex-col hover:border-purple-500/40 hover:bg-white/[0.02] transition-colors cursor-pointer h-full">
                     <CardHeader>

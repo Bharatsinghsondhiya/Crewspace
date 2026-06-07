@@ -9,7 +9,7 @@ export function ProtectedRoute({ children, adminOnly = false }: { children: Reac
     return <Redirect to="/login" />;
   }
 
-  if (adminOnly && user?.role !== "super_admin") {
+  if (adminOnly && !user?.isSuperAdmin) {
     return <Redirect to="/dashboard" />;
   }
 

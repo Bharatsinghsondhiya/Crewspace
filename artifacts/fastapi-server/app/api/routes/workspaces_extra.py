@@ -7,20 +7,20 @@ import secrets
 from datetime import datetime, timedelta, timezone
 
 from app.db.database import get_db
-from app.models import Workspace, WorkspaceMember, User, Task, TaskStatus, TaskPriority, WorkspaceInvitation, Notification, NotificationType, ActivityLog
+from app.models import Workspace, WorkspaceMember, User, Task, TaskStatus, TaskPriority, WorkspaceInvitation, Notification, NotificationType, ActivityLog, Project
 import json
 from app.schemas import (
     WorkspaceResponseItem, WorkspaceMemberResponse, TaskResponseItem, 
     CreateTaskBody, UpdateTaskBody, InviteMemberBody, WorkspaceInvitationResponse,
-    WorkspaceAnalyticsResponse
+    WorkspaceAnalyticsResponse, ProjectResponseItem
 )
 from app.api.deps import get_current_user, require_workspace_role
 
 router = APIRouter()
 
 # Dependency aliases for brevity
-AnyMember = Depends(require_workspace_role(["owner", "manager", "member", "viewer"]))
-ManagerOrOwner = Depends(require_workspace_role(["owner", "manager"]))
+AnyMember = Depends(require_workspace_role(["owner", "admin", "member", "viewer"]))
+AdminOrOwner = Depends(require_workspace_role(["owner", "admin"]))
 OwnerOnly = Depends(require_workspace_role(["owner"]))
 
 @router.get("/{workspace_id}", response_model=WorkspaceResponseItem)
@@ -42,7 +42,7 @@ async def create_invite(
     body: InviteMemberBody, 
     db: AsyncSession = Depends(get_db), 
     current_user: User = Depends(get_current_user), 
-    _: WorkspaceMember = ManagerOrOwner
+    _: WorkspaceMember = AdminOrOwner
 ):
     # Look up user on platform
     target_user = await db.scalar(select(User).where(User.email == body.email))
@@ -111,103 +111,14 @@ async def create_invite(
     await db.refresh(invite)
     return invite
 
-@router.get("/{workspace_id}/tasks", response_model=List[TaskResponseItem])
-async def list_workspace_tasks(workspace_id: int, db: AsyncSession = Depends(get_db), _: WorkspaceMember = AnyMember):
-    stmt = select(Task).options(selectinload(Task.assignee), selectinload(Task.created_by)).where(Task.workspace_id == workspace_id)
+@router.get("/{workspace_id}/projects", response_model=List[ProjectResponseItem])
+async def list_workspace_projects(workspace_id: int, db: AsyncSession = Depends(get_db), _: WorkspaceMember = AnyMember):
+    stmt = select(Project).where(Project.workspace_id == workspace_id)
     result = await db.execute(stmt)
-    return result.scalars().all()
+    projects = result.scalars().all()
+    return projects
 
-@router.post("/{workspace_id}/tasks", response_model=TaskResponseItem)
-async def create_task(workspace_id: int, task_in: CreateTaskBody, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user), _: WorkspaceMember = ManagerOrOwner):
-    task = Task(
-        title=task_in.title,
-        description=task_in.description,
-        status=TaskStatus(task_in.status),
-        priority=TaskPriority(task_in.priority),
-        assignee_id=task_in.assignee_id,
-        workspace_id=workspace_id,
-        created_by_id=current_user.id
-    )
-    db.add(task)
-    await db.commit()
-    await db.refresh(task)
-    
-    
-    activity = ActivityLog(
-        action="created task",
-        entity_type="task",
-        entity_id=task.id,
-        user_id=current_user.id,
-        workspace_id=workspace_id,
-        description=f"Task '{task.title}' was created"
-    )
-    db.add(activity)
-    await db.commit()
-    
-    stmt = select(Task).options(selectinload(Task.assignee), selectinload(Task.created_by)).where(Task.id == task.id)
-    task = await db.scalar(stmt)
-    return task
 
-@router.patch("/{workspace_id}/tasks/{task_id}", response_model=TaskResponseItem)
-async def update_task(workspace_id: int, task_id: int, task_in: UpdateTaskBody, db: AsyncSession = Depends(get_db), member: WorkspaceMember = AnyMember):
-    task = await db.scalar(select(Task).where(Task.id == task_id))
-    if not task or task.workspace_id != workspace_id:
-        raise HTTPException(404, "Task not found in this workspace")
-        
-    update_data = task_in.model_dump(exclude_unset=True)
-    
-    is_manager_or_owner = member.role.value in ["owner", "manager"]
-    
-    # If member is not a manager/owner, they can ONLY update status, and ONLY if they are assigned.
-    if not is_manager_or_owner:
-        if task.assignee_id != member.user_id:
-            raise HTTPException(403, "You can only update tasks assigned to you")
-        # Check if they are trying to update forbidden fields
-        forbidden_keys = set(update_data.keys()) - {"status"}
-        if forbidden_keys:
-            raise HTTPException(403, "Members can only update task status")
-
-    if "title" in update_data: task.title = update_data["title"]
-    if "description" in update_data: task.description = update_data["description"]
-    if "status" in update_data: 
-        val = update_data["status"]
-        task.status = TaskStatus(val.value if hasattr(val, "value") else val)
-    if "priority" in update_data: 
-        val = update_data["priority"]
-        task.priority = TaskPriority(val.value if hasattr(val, "value") else val)
-    if "assignee_id" in update_data: task.assignee_id = update_data["assignee_id"]
-    if "due_date" in update_data: task.due_date = update_data["due_date"]
-    
-    activity = ActivityLog(
-        action="updated task",
-        entity_type="task",
-        entity_id=task.id,
-        user_id=member.user_id,
-        workspace_id=workspace_id,
-        description=f"Task '{task.title}' was updated"
-    )
-    db.add(activity)
-    await db.commit()
-    
-    stmt = select(Task).options(selectinload(Task.assignee), selectinload(Task.created_by)).where(Task.id == task_id)
-    return await db.scalar(stmt)
-
-@router.get("/{workspace_id}/tasks/{task_id}", response_model=TaskResponseItem)
-async def get_task(workspace_id: int, task_id: int, db: AsyncSession = Depends(get_db), _: WorkspaceMember = AnyMember):
-    stmt = select(Task).options(selectinload(Task.assignee), selectinload(Task.created_by)).where(Task.id == task_id)
-    task = await db.scalar(stmt)
-    if not task or task.workspace_id != workspace_id:
-        raise HTTPException(404, "Task not found in this workspace")
-    return task
-
-@router.delete("/{workspace_id}/tasks/{task_id}")
-async def delete_task(workspace_id: int, task_id: int, db: AsyncSession = Depends(get_db), _: WorkspaceMember = OwnerOnly):
-    task = await db.scalar(select(Task).where(Task.id == task_id))
-    if not task or task.workspace_id != workspace_id:
-        raise HTTPException(404, "Task not found in this workspace")
-    await db.delete(task)
-    await db.commit()
-    return {"message": "Task deleted"}
 
 @router.patch("/{workspace_id}/members/{user_id}", response_model=WorkspaceMemberResponse)
 async def update_member_role(

@@ -63,11 +63,14 @@ function Router() {
       <Route path="/workspaces/:id">
         <ProtectedRoute><AppLayout><WorkspaceDetail /></AppLayout></ProtectedRoute>
       </Route>
-      <Route path="/workspaces/:id/tasks">
+      <Route path="/workspaces/:id/projects">
         <ProtectedRoute><AppLayout><WorkspaceTasks /></AppLayout></ProtectedRoute>
       </Route>
       <Route path="/tasks/:workspaceId/:taskId">
         <ProtectedRoute><AppLayout><TaskDetail /></AppLayout></ProtectedRoute>
+      </Route>
+      <Route path="/admin/projects/:id">
+        {(params) => <Redirect to={`/projects/${params.id}`} />}
       </Route>
       <Route path="/analytics/:workspaceId">
         <ProtectedRoute><AppLayout><Analytics /></AppLayout></ProtectedRoute>
@@ -84,7 +87,7 @@ function Router() {
       <Route path="/admin">
         <ProtectedRoute><AppLayout><Admin /></AppLayout></ProtectedRoute>
       </Route>
-      <Route path="/admin/projects/:id">
+      <Route path="/projects/:id">
         <ProtectedRoute><AppLayout><ProjectDetail /></AppLayout></ProtectedRoute>
       </Route>
       <Route path="/invites/:token">

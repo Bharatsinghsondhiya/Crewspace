@@ -47,7 +47,7 @@ export default function Workspaces() {
         setOpen(false);
         toast.success("Workspace created");
         form.reset();
-        if (newWorkspace?.id) setLocation(`/workspaces/${newWorkspace.id}/tasks`);
+        if (newWorkspace?.id) setLocation(`/workspaces/${newWorkspace.id}/projects`);
       },
       onError: () => toast.error("Failed to create workspace"),
     });
@@ -164,7 +164,7 @@ export default function Workspaces() {
             {workspaces.map((workspace, idx) => {
               const color = ICON_COLORS[idx % ICON_COLORS.length];
               return (
-                <Link key={workspace.id} href={`/workspaces/${workspace.id}/tasks`}>
+                <Link key={workspace.id} href={`/workspaces/${workspace.id}/projects`}>
                   <div className="group rounded-2xl border border-white/8 p-5 cursor-pointer transition-all hover:-translate-y-1 hover:border-purple-500/25 hover:shadow-[0_8px_32px_rgba(139,92,246,0.12)] relative"
                     style={{ background: "rgba(20, 12, 45, 0.7)" }}>
                     <div className="flex items-start justify-between mb-4">

@@ -17,12 +17,11 @@ async def signup(user_in: SignupBody, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Email already registered")
         
     hashed_password = security.get_password_hash(user_in.password)
-    from app.models import UserRole
     new_user = User(
         name=user_in.name,
         email=user_in.email,
         password_hash=hashed_password,
-        role=UserRole.user
+        is_super_admin=False
     )
     db.add(new_user)
     await db.commit()
@@ -160,7 +159,7 @@ async def reset_password(body: ResetPasswordBody, db: AsyncSession = Depends(get
 @router.get("/db-test")
 async def db_test(db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
     # Restrict to admin users only to prevent sensitive info leakage
-    if current_user.role.value != "super_admin":
+    if not current_user.is_super_admin:
         raise HTTPException(status_code=403, detail="Forbidden")
     try:
         from sqlalchemy import text

@@ -33,7 +33,7 @@ function InviteModalContent({ workspaceId, members, setInviteOpen }: { workspace
     queryFn: async () => {
       const token = localStorage.getItem("accessToken");
       const baseUrl = import.meta.env.VITE_API_URL || "";
-      const res = await fetch(`${baseUrl}/api/users?query=${encodeURIComponent(search)}`, {
+      const res = await fetch(`${baseUrl}/api/users?workspace_id=${workspaceId}&query=${encodeURIComponent(search)}`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (!res.ok) throw new Error("Failed to search users");
@@ -77,7 +77,7 @@ function InviteModalContent({ workspaceId, members, setInviteOpen }: { workspace
           <Select value={role} onValueChange={setRole}>
             <SelectTrigger className="bg-white/5 border-white/10 text-white rounded-xl focus:ring-purple-500/50"><SelectValue /></SelectTrigger>
             <SelectContent className="bg-[#0a0518] border-white/10 text-white">
-              <SelectItem value="manager" className="focus:bg-white/10 focus:text-white">Manager</SelectItem>
+              <SelectItem value="admin" className="focus:bg-white/10 focus:text-white">Admin</SelectItem>
               <SelectItem value="member" className="focus:bg-white/10 focus:text-white">Member</SelectItem>
               <SelectItem value="viewer" className="focus:bg-white/10 focus:text-white">Viewer</SelectItem>
             </SelectContent>
@@ -131,7 +131,7 @@ function InviteModalContent({ workspaceId, members, setInviteOpen }: { workspace
 
 const inviteSchema = z.object({
   email: z.string().email(),
-  role: z.enum(["manager", "member", "viewer"]).default("member"),
+  role: z.enum(["admin", "member", "viewer"]).default("member"),
 });
 
 type InviteFormValues = z.infer<typeof inviteSchema>;
@@ -186,7 +186,7 @@ export default function WorkspaceDetail() {
     );
   };
 
-  const onUpdateRole = (userId: number, role: "manager" | "member" | "viewer") => {
+  const onUpdateRole = (userId: number, role: "admin" | "member" | "viewer") => {
     updateRoleMutation.mutate(
       { workspaceId: id, userId, params: { role } },
       {
@@ -227,7 +227,7 @@ export default function WorkspaceDetail() {
   if (!workspace) return <div className="p-8 text-center">Workspace not found</div>;
 
   const currentMember = members?.find(m => m.userId === user?.id);
-  const isManagerOrOwner = currentMember?.role === "owner" || currentMember?.role === "manager" || workspace.ownerId === user?.id || user?.role === "admin";
+  const isAdminOrOwner = currentMember?.role === "owner" || currentMember?.role === "admin" || workspace.ownerId === user?.id || user?.isSuperAdmin;
 
   return (
     <div className="p-5 md:p-8 space-y-8 max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -242,9 +242,9 @@ export default function WorkspaceDetail() {
               <BarChart className="mr-2 h-4 w-4 text-purple-400" /> Analytics
             </Button>
           </Link>
-          <Link href={`/workspaces/${id}/tasks`}>
+          <Link href={`/workspaces/${id}/projects`}>
             <Button className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl shadow-[0_0_15px_rgba(139,92,246,0.4)]">
-              View Tasks
+              View Projects
             </Button>
           </Link>
         </div>
@@ -279,7 +279,7 @@ export default function WorkspaceDetail() {
               <CardTitle className="text-white">Members</CardTitle>
               <CardDescription className="text-white/40">People with access to this workspace</CardDescription>
             </div>
-            {isManagerOrOwner && (
+            {isAdminOrOwner && (
               <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
                 <DialogTrigger asChild>
                   <Button size="sm" className="bg-purple-600 hover:bg-purple-500 text-white rounded-xl shadow-[0_0_15px_rgba(168,85,247,0.4)] w-full sm:w-auto"><Plus className="mr-2 h-4 w-4" /> Invite</Button>
@@ -305,7 +305,7 @@ export default function WorkspaceDetail() {
                     <TableRow className="border-white/5 hover:bg-transparent">
                       <TableHead className="text-white/40 font-semibold uppercase tracking-wider text-xs px-6 py-4">User</TableHead>
                       <TableHead className="text-white/40 font-semibold uppercase tracking-wider text-xs px-6 py-4">Role</TableHead>
-                      {isManagerOrOwner && <TableHead className="w-[80px] px-6 py-4"></TableHead>}
+                      {isAdminOrOwner && <TableHead className="w-[80px] px-6 py-4"></TableHead>}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -325,19 +325,19 @@ export default function WorkspaceDetail() {
                           </div>
                         </TableCell>
                         <TableCell className="px-6 py-4">
-                          <Badge variant={member.role === "owner" || member.role === "manager" ? "default" : "secondary"} className={member.role === "owner" ? "bg-purple-500/20 text-purple-300 border-purple-500/30" : member.role === "manager" ? "bg-indigo-500/20 text-indigo-300 border-indigo-500/30" : "bg-white/5 text-white/60 border-white/10"}>
-                            {member.role === "owner" || member.role === "manager" ? <ShieldAlert className="w-3 h-3 mr-1" /> : <Shield className="w-3 h-3 mr-1" />}
+                          <Badge variant={member.role === "owner" || member.role === "admin" ? "default" : "secondary"} className={member.role === "owner" ? "bg-purple-500/20 text-purple-300 border-purple-500/30" : member.role === "admin" ? "bg-indigo-500/20 text-indigo-300 border-indigo-500/30" : "bg-white/5 text-white/60 border-white/10"}>
+                            {member.role === "owner" || member.role === "admin" ? <ShieldAlert className="w-3 h-3 mr-1" /> : <Shield className="w-3 h-3 mr-1" />}
                             {member.role}
                           </Badge>
                         </TableCell>
-                        {isManagerOrOwner && (
+                        {isAdminOrOwner && (
                           <TableCell className="px-6 py-4 text-right">
                             {member.userId !== user?.id && member.role !== "owner" && (
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="text-white/40 hover:text-white hover:bg-white/10 rounded-xl h-8 w-8"><MoreHorizontal className="w-5 h-5" /></Button></DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="bg-[#0a0518] border-white/10 text-white rounded-xl shadow-2xl min-w-[160px] p-1.5">
-                                  <DropdownMenuItem className="hover:bg-white/10 focus:bg-white/10 focus:text-white cursor-pointer rounded-lg py-2" onClick={() => onUpdateRole(member.userId, member.role === "manager" ? "member" : "manager")}>
-                                    Make {member.role === "manager" ? "Member" : "Manager"}
+                                  <DropdownMenuItem className="hover:bg-white/10 focus:bg-white/10 focus:text-white cursor-pointer rounded-lg py-2" onClick={() => onUpdateRole(member.userId, member.role === "admin" ? "member" : "admin")}>
+                                    Make {member.role === "admin" ? "Member" : "Admin"}
                                   </DropdownMenuItem>
                                   <DropdownMenuItem className="text-red-400 hover:bg-red-500/10 focus:bg-red-500/10 focus:text-red-400 cursor-pointer rounded-lg py-2 mt-1" onClick={() => onRemove(member.userId)}>
                                     <Trash className="w-4 h-4 mr-2" /> Remove

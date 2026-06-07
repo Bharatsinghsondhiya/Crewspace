@@ -216,6 +216,30 @@
         }
       }
     },
+    "/api/auth/db-test": {
+      "get": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Db Test",
+        "operationId": "db_test",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
     "/api/profile": {
       "patch": {
         "tags": [
@@ -637,13 +661,13 @@
         }
       }
     },
-    "/api/workspaces/{workspace_id}/tasks": {
+    "/api/workspaces/{workspace_id}/projects": {
       "get": {
         "tags": [
           "workspaces"
         ],
-        "summary": "List Workspace Tasks",
-        "operationId": "list_workspace_tasks",
+        "summary": "List Workspace Projects",
+        "operationId": "list_workspace_projects",
         "security": [
           {
             "OAuth2PasswordBearer": []
@@ -668,237 +692,10 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/TaskResponseItem"
+                    "$ref": "#/components/schemas/ProjectResponseItem"
                   },
-                  "title": "Response List Workspace Tasks"
+                  "title": "Response List Workspace Projects"
                 }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "workspaces"
-        ],
-        "summary": "Create Task",
-        "operationId": "create_task",
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "workspace_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "title": "Workspace Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateTaskBody"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TaskResponseItem"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/workspaces/{workspace_id}/tasks/{task_id}": {
-      "patch": {
-        "tags": [
-          "workspaces"
-        ],
-        "summary": "Update Task",
-        "operationId": "update_task",
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "workspace_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "title": "Workspace Id"
-            }
-          },
-          {
-            "name": "task_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "title": "Task Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateTaskBody"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TaskResponseItem"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
-      "get": {
-        "tags": [
-          "workspaces"
-        ],
-        "summary": "Get Task",
-        "operationId": "get_task",
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "workspace_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "title": "Workspace Id"
-            }
-          },
-          {
-            "name": "task_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "title": "Task Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TaskResponseItem"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "workspaces"
-        ],
-        "summary": "Delete Task",
-        "operationId": "delete_task",
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "workspace_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "title": "Workspace Id"
-            }
-          },
-          {
-            "name": "task_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "title": "Task Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
               }
             }
           },
@@ -1558,6 +1355,17 @@
         ],
         "parameters": [
           {
+            "name": "workspace_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "description": "Scope search to a specific workspace",
+              "title": "Workspace Id"
+            },
+            "description": "Scope search to a specific workspace"
+          },
+          {
             "name": "query",
             "in": "query",
             "required": false,
@@ -2093,6 +1901,284 @@
         }
       }
     },
+    "/api/projects/{project_id}/tasks": {
+      "get": {
+        "tags": [
+          "projects"
+        ],
+        "summary": "List Project Tasks",
+        "operationId": "list_project_tasks",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TaskResponseItem"
+                  },
+                  "title": "Response List Project Tasks"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "projects"
+        ],
+        "summary": "Create Task",
+        "operationId": "create_task",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTaskBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskResponseItem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{project_id}/tasks/{task_id}": {
+      "patch": {
+        "tags": [
+          "projects"
+        ],
+        "summary": "Update Task",
+        "operationId": "update_task",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTaskBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskResponseItem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "projects"
+        ],
+        "summary": "Get Task",
+        "operationId": "get_task",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskResponseItem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "projects"
+        ],
+        "summary": "Delete Task",
+        "operationId": "delete_task",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/": {
       "get": {
         "summary": "Root",
@@ -2309,11 +2395,16 @@
               }
             ],
             "title": "Description"
+          },
+          "workspaceId": {
+            "type": "integer",
+            "title": "Workspaceid"
           }
         },
         "type": "object",
         "required": [
-          "name"
+          "name",
+          "workspaceId"
         ],
         "title": "CreateProjectBody"
       },
@@ -2363,6 +2454,10 @@
             ],
             "title": "Duedate"
           },
+          "projectId": {
+            "type": "integer",
+            "title": "Projectid"
+          },
           "assigneeId": {
             "anyOf": [
               {
@@ -2391,7 +2486,8 @@
         },
         "type": "object",
         "required": [
-          "title"
+          "title",
+          "projectId"
         ],
         "title": "CreateTaskBody"
       },
@@ -2412,17 +2508,6 @@
               }
             ],
             "title": "Description"
-          },
-          "projectId": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Projectid"
           }
         },
         "type": "object",
@@ -2476,6 +2561,7 @@
         "properties": {
           "email": {
             "type": "string",
+            "format": "email",
             "title": "Email"
           }
         },
@@ -2533,7 +2619,7 @@
                 "$ref": "#/components/schemas/ProjectRoleEnum"
               }
             ],
-            "default": "collaborator"
+            "default": "member"
           }
         },
         "type": "object",
@@ -2725,6 +2811,10 @@
             ],
             "title": "Description"
           },
+          "workspaceId": {
+            "type": "integer",
+            "title": "Workspaceid"
+          },
           "createdById": {
             "type": "integer",
             "title": "Createdbyid"
@@ -2783,6 +2873,7 @@
         "required": [
           "id",
           "name",
+          "workspaceId",
           "createdById",
           "createdAt"
         ],
@@ -2791,9 +2882,8 @@
       "ProjectRoleEnum": {
         "type": "string",
         "enum": [
-          "owner",
           "admin",
-          "collaborator"
+          "member"
         ],
         "title": "ProjectRoleEnum"
       },
@@ -2805,7 +2895,9 @@
           },
           "password": {
             "type": "string",
-            "title": "Password"
+            "minLength": 8,
+            "title": "Password",
+            "description": "Password must be at least 8 characters"
           }
         },
         "type": "object",
@@ -2814,15 +2906,6 @@
           "password"
         ],
         "title": "ResetPasswordBody"
-      },
-      "RoleEnum": {
-        "type": "string",
-        "enum": [
-          "admin",
-          "user",
-          "member"
-        ],
-        "title": "RoleEnum"
       },
       "SignupBody": {
         "properties": {
@@ -2840,17 +2923,6 @@
             "type": "string",
             "minLength": 8,
             "title": "Password"
-          },
-          "role": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/RoleEnum"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": "user"
           }
         },
         "type": "object",
@@ -2966,9 +3038,9 @@
             ],
             "title": "Duedate"
           },
-          "workspaceId": {
+          "projectId": {
             "type": "integer",
-            "title": "Workspaceid"
+            "title": "Projectid"
           },
           "assigneeId": {
             "anyOf": [
@@ -3043,7 +3115,7 @@
           "title",
           "status",
           "priority",
-          "workspaceId",
+          "projectId",
           "createdById",
           "createdAt"
         ],
@@ -3130,14 +3202,14 @@
       },
       "UpdateRoleBody": {
         "properties": {
-          "role": {
-            "type": "string",
-            "title": "Role"
+          "is_super_admin": {
+            "type": "boolean",
+            "title": "Is Super Admin"
           }
         },
         "type": "object",
         "required": [
-          "role"
+          "is_super_admin"
         ],
         "title": "UpdateRoleBody"
       },
@@ -3300,8 +3372,9 @@
             "format": "email",
             "title": "Email"
           },
-          "role": {
-            "$ref": "#/components/schemas/RoleEnum"
+          "isSuperAdmin": {
+            "type": "boolean",
+            "title": "Issuperadmin"
           },
           "avatarUrl": {
             "anyOf": [
@@ -3325,7 +3398,7 @@
           "id",
           "name",
           "email",
-          "role",
+          "isSuperAdmin",
           "createdAt"
         ],
         "title": "UserResponse"
@@ -3523,17 +3596,6 @@
             "type": "integer",
             "title": "Ownerid"
           },
-          "projectId": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Projectid"
-          },
           "memberCount": {
             "anyOf": [
               {
@@ -3575,7 +3637,7 @@
         "type": "string",
         "enum": [
           "owner",
-          "manager",
+          "admin",
           "member",
           "viewer"
         ],

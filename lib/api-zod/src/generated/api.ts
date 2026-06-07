@@ -14,13 +14,12 @@ export const signupBodyNameMin = 2;
 
 export const signupBodyPasswordMin = 8;
 
-export const signupBodyRoleDefault = `user`;
+
 
 export const SignupBody = zod.object({
   "name": zod.string().min(signupBodyNameMin),
   "email": zod.string().email(),
-  "password": zod.string().min(signupBodyPasswordMin),
-  "role": zod.union([zod.enum(['admin', 'user', 'member']),zod.null()]).default(signupBodyRoleDefault)
+  "password": zod.string().min(signupBodyPasswordMin)
 })
 
 
@@ -37,7 +36,7 @@ export const LoginResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "email": zod.string().email(),
-  "role": zod.enum(['admin', 'user', 'member']),
+  "isSuperAdmin": zod.boolean(),
   "avatarUrl": zod.union([zod.string(),zod.null()]).optional(),
   "createdAt": zod.coerce.date()
 }),
@@ -53,7 +52,7 @@ export const GetMeResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "email": zod.string().email(),
-  "role": zod.enum(['admin', 'user', 'member']),
+  "isSuperAdmin": zod.boolean(),
   "avatarUrl": zod.union([zod.string(),zod.null()]).optional(),
   "createdAt": zod.coerce.date()
 })
@@ -71,7 +70,7 @@ export const LogoutResponse = zod.object({
  * @summary Forgot Password
  */
 export const ForgotPasswordBody = zod.object({
-  "email": zod.string()
+  "email": zod.string().email()
 })
 
 export const ForgotPasswordResponse = zod.object({
@@ -82,14 +81,24 @@ export const ForgotPasswordResponse = zod.object({
 /**
  * @summary Reset Password
  */
+export const resetPasswordBodyPasswordMin = 8;
+
+
+
 export const ResetPasswordBody = zod.object({
   "token": zod.string(),
-  "password": zod.string()
+  "password": zod.string().min(resetPasswordBodyPasswordMin).describe('Password must be at least 8 characters')
 })
 
 export const ResetPasswordResponse = zod.object({
   "message": zod.string()
 })
+
+
+/**
+ * @summary Db Test
+ */
+export const DbTestResponse = zod.unknown()
 
 
 /**
@@ -108,7 +117,7 @@ export const UpdateProfileResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "email": zod.string().email(),
-  "role": zod.enum(['admin', 'user', 'member']),
+  "isSuperAdmin": zod.boolean(),
   "avatarUrl": zod.union([zod.string(),zod.null()]).optional(),
   "createdAt": zod.coerce.date()
 })
@@ -139,7 +148,6 @@ export const ListWorkspacesResponseItem = zod.object({
   "name": zod.string(),
   "description": zod.union([zod.string(),zod.null()]).optional(),
   "ownerId": zod.number(),
-  "projectId": zod.union([zod.number(),zod.null()]).optional(),
   "memberCount": zod.union([zod.number(),zod.null()]).optional(),
   "taskCount": zod.union([zod.number(),zod.null()]).optional(),
   "createdAt": zod.coerce.date()
@@ -155,8 +163,7 @@ export const ListWorkspacesResponse = zod.array(ListWorkspacesResponseItem)
 
 export const CreateWorkspaceBody = zod.object({
   "name": zod.string().min(1),
-  "description": zod.union([zod.string(),zod.null()]).optional(),
-  "projectId": zod.union([zod.number(),zod.null()]).optional()
+  "description": zod.union([zod.string(),zod.null()]).optional()
 })
 
 
@@ -180,7 +187,6 @@ export const UpdateWorkspaceResponse = zod.object({
   "name": zod.string(),
   "description": zod.union([zod.string(),zod.null()]).optional(),
   "ownerId": zod.number(),
-  "projectId": zod.union([zod.number(),zod.null()]).optional(),
   "memberCount": zod.union([zod.number(),zod.null()]).optional(),
   "taskCount": zod.union([zod.number(),zod.null()]).optional(),
   "createdAt": zod.coerce.date()
@@ -211,7 +217,6 @@ export const GetWorkspaceResponse = zod.object({
   "name": zod.string(),
   "description": zod.union([zod.string(),zod.null()]).optional(),
   "ownerId": zod.number(),
-  "projectId": zod.union([zod.number(),zod.null()]).optional(),
   "memberCount": zod.union([zod.number(),zod.null()]).optional(),
   "taskCount": zod.union([zod.number(),zod.null()]).optional(),
   "createdAt": zod.coerce.date()
@@ -228,13 +233,13 @@ export const GetWorkspaceMembersParams = zod.object({
 export const GetWorkspaceMembersResponseItem = zod.object({
   "userId": zod.number(),
   "workspaceId": zod.number(),
-  "role": zod.enum(['owner', 'manager', 'member', 'viewer']),
+  "role": zod.enum(['owner', 'admin', 'member', 'viewer']),
   "joinedAt": zod.coerce.date(),
   "user": zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "email": zod.string().email(),
-  "role": zod.enum(['admin', 'user', 'member']),
+  "isSuperAdmin": zod.boolean(),
   "avatarUrl": zod.union([zod.string(),zod.null()]).optional(),
   "createdAt": zod.coerce.date()
 })
@@ -253,14 +258,14 @@ export const createInviteBodyRoleDefault = `member`;
 
 export const CreateInviteBody = zod.object({
   "email": zod.string().email(),
-  "role": zod.enum(['owner', 'manager', 'member', 'viewer']).default(createInviteBodyRoleDefault)
+  "role": zod.enum(['owner', 'admin', 'member', 'viewer']).default(createInviteBodyRoleDefault)
 })
 
 export const CreateInviteResponse = zod.object({
   "id": zod.number(),
   "workspaceId": zod.number(),
   "email": zod.string(),
-  "role": zod.enum(['owner', 'manager', 'member', 'viewer']),
+  "role": zod.enum(['owner', 'admin', 'member', 'viewer']),
   "token": zod.string(),
   "expiresAt": zod.coerce.date(),
   "accepted": zod.boolean(),
@@ -269,176 +274,25 @@ export const CreateInviteResponse = zod.object({
 
 
 /**
- * @summary List Workspace Tasks
+ * @summary List Workspace Projects
  */
-export const ListWorkspaceTasksParams = zod.object({
+export const ListWorkspaceProjectsParams = zod.object({
   "workspace_id": zod.coerce.number()
 })
 
-export const ListWorkspaceTasksResponseItem = zod.object({
+export const ListWorkspaceProjectsResponseItem = zod.object({
   "id": zod.number(),
-  "title": zod.string(),
+  "name": zod.string(),
   "description": zod.union([zod.string(),zod.null()]).optional(),
-  "status": zod.enum(['pending', 'in_progress', 'completed']),
-  "priority": zod.enum(['low', 'medium', 'high']),
-  "dueDate": zod.union([zod.coerce.date(),zod.null()]).optional(),
   "workspaceId": zod.number(),
-  "assigneeId": zod.union([zod.number(),zod.null()]).optional(),
   "createdById": zod.number(),
-  "labels": zod.union([zod.array(zod.string()),zod.null()]).optional(),
-  "assignee": zod.union([zod.object({
-  "id": zod.number(),
-  "name": zod.string(),
-  "avatarUrl": zod.union([zod.string(),zod.null()]).optional()
-}),zod.null()]).optional(),
-  "createdBy": zod.union([zod.object({
-  "id": zod.number(),
-  "name": zod.string(),
-  "avatarUrl": zod.union([zod.string(),zod.null()]).optional()
-}),zod.null()]).optional(),
   "createdAt": zod.coerce.date(),
-  "updatedAt": zod.union([zod.coerce.date(),zod.null()]).optional()
+  "updatedAt": zod.union([zod.coerce.date(),zod.null()]).optional(),
+  "workspaceCount": zod.union([zod.number(),zod.null()]).optional(),
+  "memberCount": zod.union([zod.number(),zod.null()]).optional(),
+  "myRole": zod.union([zod.enum(['admin', 'member']),zod.null()]).optional()
 })
-export const ListWorkspaceTasksResponse = zod.array(ListWorkspaceTasksResponseItem)
-
-
-/**
- * @summary Create Task
- */
-export const CreateTaskParams = zod.object({
-  "workspace_id": zod.coerce.number()
-})
-
-
-export const createTaskBodyStatusDefault = `pending`;
-export const createTaskBodyPriorityDefault = `medium`;
-
-export const CreateTaskBody = zod.object({
-  "title": zod.string().min(1),
-  "description": zod.union([zod.string(),zod.null()]).optional(),
-  "status": zod.enum(['pending', 'in_progress', 'completed']).default(createTaskBodyStatusDefault),
-  "priority": zod.enum(['low', 'medium', 'high']).default(createTaskBodyPriorityDefault),
-  "dueDate": zod.union([zod.coerce.date(),zod.null()]).optional(),
-  "assigneeId": zod.union([zod.number(),zod.null()]).optional(),
-  "labels": zod.union([zod.array(zod.string()),zod.null()]).optional()
-})
-
-export const CreateTaskResponse = zod.object({
-  "id": zod.number(),
-  "title": zod.string(),
-  "description": zod.union([zod.string(),zod.null()]).optional(),
-  "status": zod.enum(['pending', 'in_progress', 'completed']),
-  "priority": zod.enum(['low', 'medium', 'high']),
-  "dueDate": zod.union([zod.coerce.date(),zod.null()]).optional(),
-  "workspaceId": zod.number(),
-  "assigneeId": zod.union([zod.number(),zod.null()]).optional(),
-  "createdById": zod.number(),
-  "labels": zod.union([zod.array(zod.string()),zod.null()]).optional(),
-  "assignee": zod.union([zod.object({
-  "id": zod.number(),
-  "name": zod.string(),
-  "avatarUrl": zod.union([zod.string(),zod.null()]).optional()
-}),zod.null()]).optional(),
-  "createdBy": zod.union([zod.object({
-  "id": zod.number(),
-  "name": zod.string(),
-  "avatarUrl": zod.union([zod.string(),zod.null()]).optional()
-}),zod.null()]).optional(),
-  "createdAt": zod.coerce.date(),
-  "updatedAt": zod.union([zod.coerce.date(),zod.null()]).optional()
-})
-
-
-/**
- * @summary Update Task
- */
-export const UpdateTaskParams = zod.object({
-  "workspace_id": zod.coerce.number(),
-  "task_id": zod.coerce.number()
-})
-
-
-
-
-export const UpdateTaskBody = zod.object({
-  "title": zod.union([zod.string().min(1),zod.null()]).optional(),
-  "description": zod.union([zod.string(),zod.null()]).optional(),
-  "status": zod.union([zod.enum(['pending', 'in_progress', 'completed']),zod.null()]).optional(),
-  "priority": zod.union([zod.enum(['low', 'medium', 'high']),zod.null()]).optional(),
-  "dueDate": zod.union([zod.coerce.date(),zod.null()]).optional(),
-  "assigneeId": zod.union([zod.number(),zod.null()]).optional(),
-  "labels": zod.union([zod.array(zod.string()),zod.null()]).optional()
-})
-
-export const UpdateTaskResponse = zod.object({
-  "id": zod.number(),
-  "title": zod.string(),
-  "description": zod.union([zod.string(),zod.null()]).optional(),
-  "status": zod.enum(['pending', 'in_progress', 'completed']),
-  "priority": zod.enum(['low', 'medium', 'high']),
-  "dueDate": zod.union([zod.coerce.date(),zod.null()]).optional(),
-  "workspaceId": zod.number(),
-  "assigneeId": zod.union([zod.number(),zod.null()]).optional(),
-  "createdById": zod.number(),
-  "labels": zod.union([zod.array(zod.string()),zod.null()]).optional(),
-  "assignee": zod.union([zod.object({
-  "id": zod.number(),
-  "name": zod.string(),
-  "avatarUrl": zod.union([zod.string(),zod.null()]).optional()
-}),zod.null()]).optional(),
-  "createdBy": zod.union([zod.object({
-  "id": zod.number(),
-  "name": zod.string(),
-  "avatarUrl": zod.union([zod.string(),zod.null()]).optional()
-}),zod.null()]).optional(),
-  "createdAt": zod.coerce.date(),
-  "updatedAt": zod.union([zod.coerce.date(),zod.null()]).optional()
-})
-
-
-/**
- * @summary Get Task
- */
-export const GetTaskParams = zod.object({
-  "workspace_id": zod.coerce.number(),
-  "task_id": zod.coerce.number()
-})
-
-export const GetTaskResponse = zod.object({
-  "id": zod.number(),
-  "title": zod.string(),
-  "description": zod.union([zod.string(),zod.null()]).optional(),
-  "status": zod.enum(['pending', 'in_progress', 'completed']),
-  "priority": zod.enum(['low', 'medium', 'high']),
-  "dueDate": zod.union([zod.coerce.date(),zod.null()]).optional(),
-  "workspaceId": zod.number(),
-  "assigneeId": zod.union([zod.number(),zod.null()]).optional(),
-  "createdById": zod.number(),
-  "labels": zod.union([zod.array(zod.string()),zod.null()]).optional(),
-  "assignee": zod.union([zod.object({
-  "id": zod.number(),
-  "name": zod.string(),
-  "avatarUrl": zod.union([zod.string(),zod.null()]).optional()
-}),zod.null()]).optional(),
-  "createdBy": zod.union([zod.object({
-  "id": zod.number(),
-  "name": zod.string(),
-  "avatarUrl": zod.union([zod.string(),zod.null()]).optional()
-}),zod.null()]).optional(),
-  "createdAt": zod.coerce.date(),
-  "updatedAt": zod.union([zod.coerce.date(),zod.null()]).optional()
-})
-
-
-/**
- * @summary Delete Task
- */
-export const DeleteTaskParams = zod.object({
-  "workspace_id": zod.coerce.number(),
-  "task_id": zod.coerce.number()
-})
-
-export const DeleteTaskResponse = zod.unknown()
+export const ListWorkspaceProjectsResponse = zod.array(ListWorkspaceProjectsResponseItem)
 
 
 /**
@@ -456,13 +310,13 @@ export const UpdateMemberRoleQueryParams = zod.object({
 export const UpdateMemberRoleResponse = zod.object({
   "userId": zod.number(),
   "workspaceId": zod.number(),
-  "role": zod.enum(['owner', 'manager', 'member', 'viewer']),
+  "role": zod.enum(['owner', 'admin', 'member', 'viewer']),
   "joinedAt": zod.coerce.date(),
   "user": zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "email": zod.string().email(),
-  "role": zod.enum(['admin', 'user', 'member']),
+  "isSuperAdmin": zod.boolean(),
   "avatarUrl": zod.union([zod.string(),zod.null()]).optional(),
   "createdAt": zod.coerce.date()
 })
@@ -545,7 +399,7 @@ export const GetMyTasksResponseItem = zod.object({
   "status": zod.enum(['pending', 'in_progress', 'completed']),
   "priority": zod.enum(['low', 'medium', 'high']),
   "dueDate": zod.union([zod.coerce.date(),zod.null()]).optional(),
-  "workspaceId": zod.number(),
+  "projectId": zod.number(),
   "assigneeId": zod.union([zod.number(),zod.null()]).optional(),
   "createdById": zod.number(),
   "labels": zod.union([zod.array(zod.string()),zod.null()]).optional(),
@@ -575,7 +429,7 @@ export const GetAllTasksResponseItem = zod.object({
   "status": zod.enum(['pending', 'in_progress', 'completed']),
   "priority": zod.enum(['low', 'medium', 'high']),
   "dueDate": zod.union([zod.coerce.date(),zod.null()]).optional(),
-  "workspaceId": zod.number(),
+  "projectId": zod.number(),
   "assigneeId": zod.union([zod.number(),zod.null()]).optional(),
   "createdById": zod.number(),
   "labels": zod.union([zod.array(zod.string()),zod.null()]).optional(),
@@ -643,7 +497,7 @@ export const AdminListUsersResponseItem = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "email": zod.string().email(),
-  "role": zod.enum(['admin', 'user', 'member']),
+  "isSuperAdmin": zod.boolean(),
   "avatarUrl": zod.union([zod.string(),zod.null()]).optional(),
   "createdAt": zod.coerce.date()
 })
@@ -658,14 +512,14 @@ export const AdminUpdateUserRoleParams = zod.object({
 })
 
 export const AdminUpdateUserRoleBody = zod.object({
-  "role": zod.string()
+  "is_super_admin": zod.boolean()
 })
 
 export const AdminUpdateUserRoleResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "email": zod.string().email(),
-  "role": zod.enum(['admin', 'user', 'member']),
+  "isSuperAdmin": zod.boolean(),
   "avatarUrl": zod.union([zod.string(),zod.null()]).optional(),
   "createdAt": zod.coerce.date()
 })
@@ -729,7 +583,7 @@ export const GetInviteResponse = zod.object({
   "id": zod.number(),
   "workspaceId": zod.number(),
   "email": zod.string(),
-  "role": zod.enum(['owner', 'manager', 'member', 'viewer']),
+  "role": zod.enum(['owner', 'admin', 'member', 'viewer']),
   "token": zod.string(),
   "expiresAt": zod.coerce.date(),
   "accepted": zod.boolean(),
@@ -758,6 +612,7 @@ export const searchUsersQueryQueryMin = 0;
 
 
 export const SearchUsersQueryParams = zod.object({
+  "workspace_id": zod.coerce.number().describe('Scope search to a specific workspace'),
   "query": zod.coerce.string().min(searchUsersQueryQueryMin).default(searchUsersQueryQueryDefault)
 })
 
@@ -765,7 +620,7 @@ export const SearchUsersResponseItem = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "email": zod.string().email(),
-  "role": zod.enum(['admin', 'user', 'member']),
+  "isSuperAdmin": zod.boolean(),
   "avatarUrl": zod.union([zod.string(),zod.null()]).optional(),
   "createdAt": zod.coerce.date()
 })
@@ -779,12 +634,13 @@ export const GetProjectsResponseItem = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "description": zod.union([zod.string(),zod.null()]).optional(),
+  "workspaceId": zod.number(),
   "createdById": zod.number(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.union([zod.coerce.date(),zod.null()]).optional(),
   "workspaceCount": zod.union([zod.number(),zod.null()]).optional(),
   "memberCount": zod.union([zod.number(),zod.null()]).optional(),
-  "myRole": zod.union([zod.enum(['owner', 'admin', 'collaborator']),zod.null()]).optional()
+  "myRole": zod.union([zod.enum(['admin', 'member']),zod.null()]).optional()
 })
 export const GetProjectsResponse = zod.array(GetProjectsResponseItem)
 
@@ -797,7 +653,8 @@ export const GetProjectsResponse = zod.array(GetProjectsResponseItem)
 
 export const CreateProjectBody = zod.object({
   "name": zod.string().min(1),
-  "description": zod.union([zod.string(),zod.null()]).optional()
+  "description": zod.union([zod.string(),zod.null()]).optional(),
+  "workspaceId": zod.number()
 })
 
 
@@ -812,12 +669,13 @@ export const GetProjectResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "description": zod.union([zod.string(),zod.null()]).optional(),
+  "workspaceId": zod.number(),
   "createdById": zod.number(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.union([zod.coerce.date(),zod.null()]).optional(),
   "workspaceCount": zod.union([zod.number(),zod.null()]).optional(),
   "memberCount": zod.union([zod.number(),zod.null()]).optional(),
-  "myRole": zod.union([zod.enum(['owner', 'admin', 'collaborator']),zod.null()]).optional()
+  "myRole": zod.union([zod.enum(['admin', 'member']),zod.null()]).optional()
 })
 
 
@@ -840,12 +698,13 @@ export const UpdateProjectResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "description": zod.union([zod.string(),zod.null()]).optional(),
+  "workspaceId": zod.number(),
   "createdById": zod.number(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.union([zod.coerce.date(),zod.null()]).optional(),
   "workspaceCount": zod.union([zod.number(),zod.null()]).optional(),
   "memberCount": zod.union([zod.number(),zod.null()]).optional(),
-  "myRole": zod.union([zod.enum(['owner', 'admin', 'collaborator']),zod.null()]).optional()
+  "myRole": zod.union([zod.enum(['admin', 'member']),zod.null()]).optional()
 })
 
 
@@ -871,13 +730,13 @@ export const GetProjectMembersParams = zod.object({
 export const GetProjectMembersResponseItem = zod.object({
   "userId": zod.number(),
   "projectId": zod.number(),
-  "role": zod.enum(['owner', 'admin', 'collaborator']),
+  "role": zod.enum(['admin', 'member']),
   "joinedAt": zod.coerce.date(),
   "user": zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "email": zod.string().email(),
-  "role": zod.enum(['admin', 'user', 'member']),
+  "isSuperAdmin": zod.boolean(),
   "avatarUrl": zod.union([zod.string(),zod.null()]).optional(),
   "createdAt": zod.coerce.date()
 })
@@ -892,11 +751,11 @@ export const AddProjectMemberParams = zod.object({
   "project_id": zod.coerce.number()
 })
 
-export const addProjectMemberBodyRoleDefault = `collaborator`;
+export const addProjectMemberBodyRoleDefault = `member`;
 
 export const AddProjectMemberBody = zod.object({
   "email": zod.string().email(),
-  "role": zod.enum(['owner', 'admin', 'collaborator']).default(addProjectMemberBodyRoleDefault)
+  "role": zod.enum(['admin', 'member']).default(addProjectMemberBodyRoleDefault)
 })
 
 export const AddProjectMemberResponse = zod.object({
@@ -938,23 +797,197 @@ export const UpdateProjectMemberRoleParams = zod.object({
 })
 
 export const UpdateProjectMemberRoleBody = zod.object({
-  "role": zod.enum(['owner', 'admin', 'collaborator'])
+  "role": zod.enum(['admin', 'member'])
 })
 
 export const UpdateProjectMemberRoleResponse = zod.object({
   "userId": zod.number(),
   "projectId": zod.number(),
-  "role": zod.enum(['owner', 'admin', 'collaborator']),
+  "role": zod.enum(['admin', 'member']),
   "joinedAt": zod.coerce.date(),
   "user": zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "email": zod.string().email(),
-  "role": zod.enum(['admin', 'user', 'member']),
+  "isSuperAdmin": zod.boolean(),
   "avatarUrl": zod.union([zod.string(),zod.null()]).optional(),
   "createdAt": zod.coerce.date()
 })
 })
+
+
+/**
+ * @summary List Project Tasks
+ */
+export const ListProjectTasksParams = zod.object({
+  "project_id": zod.coerce.number()
+})
+
+export const ListProjectTasksResponseItem = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.union([zod.string(),zod.null()]).optional(),
+  "status": zod.enum(['pending', 'in_progress', 'completed']),
+  "priority": zod.enum(['low', 'medium', 'high']),
+  "dueDate": zod.union([zod.coerce.date(),zod.null()]).optional(),
+  "projectId": zod.number(),
+  "assigneeId": zod.union([zod.number(),zod.null()]).optional(),
+  "createdById": zod.number(),
+  "labels": zod.union([zod.array(zod.string()),zod.null()]).optional(),
+  "assignee": zod.union([zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "avatarUrl": zod.union([zod.string(),zod.null()]).optional()
+}),zod.null()]).optional(),
+  "createdBy": zod.union([zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "avatarUrl": zod.union([zod.string(),zod.null()]).optional()
+}),zod.null()]).optional(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.union([zod.coerce.date(),zod.null()]).optional()
+})
+export const ListProjectTasksResponse = zod.array(ListProjectTasksResponseItem)
+
+
+/**
+ * @summary Create Task
+ */
+export const CreateTaskParams = zod.object({
+  "project_id": zod.coerce.number()
+})
+
+
+export const createTaskBodyStatusDefault = `pending`;
+export const createTaskBodyPriorityDefault = `medium`;
+
+export const CreateTaskBody = zod.object({
+  "title": zod.string().min(1),
+  "description": zod.union([zod.string(),zod.null()]).optional(),
+  "status": zod.enum(['pending', 'in_progress', 'completed']).default(createTaskBodyStatusDefault),
+  "priority": zod.enum(['low', 'medium', 'high']).default(createTaskBodyPriorityDefault),
+  "dueDate": zod.union([zod.coerce.date(),zod.null()]).optional(),
+  "projectId": zod.number(),
+  "assigneeId": zod.union([zod.number(),zod.null()]).optional(),
+  "labels": zod.union([zod.array(zod.string()),zod.null()]).optional()
+})
+
+export const CreateTaskResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.union([zod.string(),zod.null()]).optional(),
+  "status": zod.enum(['pending', 'in_progress', 'completed']),
+  "priority": zod.enum(['low', 'medium', 'high']),
+  "dueDate": zod.union([zod.coerce.date(),zod.null()]).optional(),
+  "projectId": zod.number(),
+  "assigneeId": zod.union([zod.number(),zod.null()]).optional(),
+  "createdById": zod.number(),
+  "labels": zod.union([zod.array(zod.string()),zod.null()]).optional(),
+  "assignee": zod.union([zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "avatarUrl": zod.union([zod.string(),zod.null()]).optional()
+}),zod.null()]).optional(),
+  "createdBy": zod.union([zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "avatarUrl": zod.union([zod.string(),zod.null()]).optional()
+}),zod.null()]).optional(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.union([zod.coerce.date(),zod.null()]).optional()
+})
+
+
+/**
+ * @summary Update Task
+ */
+export const UpdateTaskParams = zod.object({
+  "project_id": zod.coerce.number(),
+  "task_id": zod.coerce.number()
+})
+
+
+
+
+export const UpdateTaskBody = zod.object({
+  "title": zod.union([zod.string().min(1),zod.null()]).optional(),
+  "description": zod.union([zod.string(),zod.null()]).optional(),
+  "status": zod.union([zod.enum(['pending', 'in_progress', 'completed']),zod.null()]).optional(),
+  "priority": zod.union([zod.enum(['low', 'medium', 'high']),zod.null()]).optional(),
+  "dueDate": zod.union([zod.coerce.date(),zod.null()]).optional(),
+  "assigneeId": zod.union([zod.number(),zod.null()]).optional(),
+  "labels": zod.union([zod.array(zod.string()),zod.null()]).optional()
+})
+
+export const UpdateTaskResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.union([zod.string(),zod.null()]).optional(),
+  "status": zod.enum(['pending', 'in_progress', 'completed']),
+  "priority": zod.enum(['low', 'medium', 'high']),
+  "dueDate": zod.union([zod.coerce.date(),zod.null()]).optional(),
+  "projectId": zod.number(),
+  "assigneeId": zod.union([zod.number(),zod.null()]).optional(),
+  "createdById": zod.number(),
+  "labels": zod.union([zod.array(zod.string()),zod.null()]).optional(),
+  "assignee": zod.union([zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "avatarUrl": zod.union([zod.string(),zod.null()]).optional()
+}),zod.null()]).optional(),
+  "createdBy": zod.union([zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "avatarUrl": zod.union([zod.string(),zod.null()]).optional()
+}),zod.null()]).optional(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.union([zod.coerce.date(),zod.null()]).optional()
+})
+
+
+/**
+ * @summary Get Task
+ */
+export const GetTaskParams = zod.object({
+  "project_id": zod.coerce.number(),
+  "task_id": zod.coerce.number()
+})
+
+export const GetTaskResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.union([zod.string(),zod.null()]).optional(),
+  "status": zod.enum(['pending', 'in_progress', 'completed']),
+  "priority": zod.enum(['low', 'medium', 'high']),
+  "dueDate": zod.union([zod.coerce.date(),zod.null()]).optional(),
+  "projectId": zod.number(),
+  "assigneeId": zod.union([zod.number(),zod.null()]).optional(),
+  "createdById": zod.number(),
+  "labels": zod.union([zod.array(zod.string()),zod.null()]).optional(),
+  "assignee": zod.union([zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "avatarUrl": zod.union([zod.string(),zod.null()]).optional()
+}),zod.null()]).optional(),
+  "createdBy": zod.union([zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "avatarUrl": zod.union([zod.string(),zod.null()]).optional()
+}),zod.null()]).optional(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.union([zod.coerce.date(),zod.null()]).optional()
+})
+
+
+/**
+ * @summary Delete Task
+ */
+export const DeleteTaskParams = zod.object({
+  "project_id": zod.coerce.number(),
+  "task_id": zod.coerce.number()
+})
+
+export const DeleteTaskResponse = zod.unknown()
 
 
 /**

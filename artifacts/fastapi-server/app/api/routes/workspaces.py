@@ -41,7 +41,6 @@ async def list_workspaces(db: AsyncSession = Depends(get_db), current_user: User
             "name": w.name, 
             "description": w.description, 
             "owner_id": w.owner_id, 
-            "project_id": w.project_id,
             "created_at": w.created_at.isoformat()
         } for w in workspaces
     ]
@@ -58,8 +57,7 @@ async def create_workspace(
     new_workspace = Workspace(
         name=workspace_in.name,
         description=workspace_in.description,
-        owner_id=current_user.id,
-        project_id=workspace_in.project_id if hasattr(workspace_in, 'project_id') else None
+        owner_id=current_user.id
     )
     db.add(new_workspace)
     await db.commit()

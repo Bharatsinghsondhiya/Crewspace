@@ -7,9 +7,7 @@ from sqlalchemy.sql import func
 class Base(DeclarativeBase):
     pass
 
-class UserRole(str, enum.Enum):
-    user = "user"
-    super_admin = "super_admin"
+
 
 class User(Base):
     __tablename__ = "users"
@@ -17,7 +15,7 @@ class User(Base):
     name = Column(String(255), nullable=False)
     email = Column(String(255), nullable=False, unique=True)
     password_hash = Column(String(255), nullable=False)
-    role = Column(Enum(UserRole), nullable=False, default=UserRole.user)
+    is_super_admin = Column(Boolean, nullable=False, default=False)
     avatar_url = Column(Text, nullable=True)
     refresh_token = Column(Text, nullable=True)
     reset_token = Column(Text, nullable=True)
@@ -27,12 +25,11 @@ class User(Base):
 
 class WorkspaceMemberRole(str, enum.Enum):
     owner = "owner"
-    manager = "manager"
+    admin = "admin"
     member = "member"
     viewer = "viewer"
 
 class ProjectMemberRole(str, enum.Enum):
-    owner = "owner"
     admin = "admin"
     member = "member"
 
@@ -41,11 +38,13 @@ class Project(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
+    workspace_id = Column(Integer, ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=False)
     created_by_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
     updated_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())
 
     created_by = relationship("User")
+    workspace = relationship("Workspace", back_populates="projects")
 
 class ProjectMember(Base):
     __tablename__ = "project_members"
@@ -61,13 +60,13 @@ class Workspace(Base):
     __tablename__ = "workspaces"
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(255), nullable=False)
+    billing_plan = Column(String(50), nullable=False, default="free")
     description = Column(Text, nullable=True)
     owner_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    project_id = Column(Integer, ForeignKey("projects.id", ondelete="CASCADE"), nullable=True)
     created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
     updated_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())
     
-    project = relationship("Project")
+    projects = relationship("Project", back_populates="workspace", cascade="all, delete-orphan")
 
 class WorkspaceMember(Base):
     __tablename__ = "workspace_members"
@@ -97,7 +96,7 @@ class Task(Base):
     status = Column(Enum(TaskStatus), nullable=False, default=TaskStatus.pending)
     priority = Column(Enum(TaskPriority), nullable=False, default=TaskPriority.medium)
     due_date = Column(DateTime(timezone=True), nullable=True)
-    workspace_id = Column(Integer, ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=False)
+    project_id = Column(Integer, ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
     assignee_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     created_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     labels = Column(Text, nullable=False, default="[]") # stored as json string
@@ -106,7 +105,7 @@ class Task(Base):
     
     assignee = relationship("User", foreign_keys=[assignee_id])
     created_by = relationship("User", foreign_keys=[created_by_id])
-    workspace = relationship("Workspace")
+    project = relationship("Project")
 
 class NotificationType(str, enum.Enum):
     task_assigned = "task_assigned"
