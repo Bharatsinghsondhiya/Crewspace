@@ -29,7 +29,7 @@ function InviteModalContent({ workspaceId, members, setInviteOpen }: { workspace
   const inviteMutation = useCreateInvite();
 
   const { data: users, isLoading, isError, error } = useQuery({
-    queryKey: ["users", search],
+    queryKey: ["users", workspaceId, search],
     queryFn: async () => {
       const token = localStorage.getItem("accessToken");
       const baseUrl = import.meta.env.VITE_API_URL || "";
@@ -38,7 +38,8 @@ function InviteModalContent({ workspaceId, members, setInviteOpen }: { workspace
       });
       if (!res.ok) throw new Error("Failed to search users");
       return res.json();
-    }
+    },
+    enabled: !!workspaceId && workspaceId > 0
   });
 
   const onInvite = (email: string) => {

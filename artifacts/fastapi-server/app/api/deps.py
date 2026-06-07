@@ -36,18 +36,19 @@ async def get_current_user(
     # Fetch user from the database
     result = await db.execute(select(User).filter(User.id == int(user_id)))
     user = result.scalars().first()
-    
+
     if user is None:
         raise credentials_exception
-        
+
     return user
 
 async def get_current_admin_user(
     current_user: User = Depends(get_current_user),
 ) -> User:
-    if current_user.role.value != "super_admin":
+    # User model uses is_super_admin (bool), not a role enum
+    if not current_user.is_super_admin:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, 
+            status_code=status.HTTP_403_FORBIDDEN,
             detail="Not enough permissions"
         )
     return current_user
@@ -64,19 +65,23 @@ def require_workspace_role(allowed_roles: List[str]) -> Callable:
         )
         result = await db.execute(stmt)
         member = result.scalars().first()
-        
+
+        # Super admins bypass workspace role checks
+        if current_user.is_super_admin:
+            return member
+
         if not member:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You are not a member of this workspace"
             )
-            
+
         if member.role.value not in allowed_roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Requires one of roles: {', '.join(allowed_roles)}"
             )
-            
+
         return member
     return role_checker
 
@@ -92,25 +97,27 @@ def require_project_role(allowed_roles: List[str]) -> Callable:
         )
         result = await db.execute(stmt)
         member = result.scalars().first()
-        
-        if current_user.role.value == "super_admin":
-            return member # super_admin has access to all
-            
+
+        # Super admins bypass project role checks
+        if current_user.is_super_admin:
+            return member
+
         if not member:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You are not a member of this project"
             )
-            
+
         if member.role.value not in allowed_roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Requires one of roles: {', '.join(allowed_roles)}"
             )
-            
+
         return member
     return role_checker
 
-verify_workspace_admin = require_workspace_role(["owner", "manager"])
+# "manager" was not a valid WorkspaceMemberRole — correct roles are owner/admin/member/viewer
+verify_workspace_admin = require_workspace_role(["owner", "admin"])
 verify_project_member = require_project_role(["owner", "admin", "member"])
 verify_project_admin = require_project_role(["owner", "admin"])

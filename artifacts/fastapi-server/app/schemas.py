@@ -245,6 +245,7 @@ class DashboardSummaryResponse(BaseSchema):
     my_tasks: int
     my_pending_tasks: int
     my_completed_tasks: int
+    tasks_by_priority: Optional[dict] = None
     recent_activity: List[ActivityLogResponseItem]
 
 # Notifications

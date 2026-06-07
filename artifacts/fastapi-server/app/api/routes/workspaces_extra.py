@@ -173,20 +173,23 @@ async def get_workspace_analytics(
     db: AsyncSession = Depends(get_db), 
     _: WorkspaceMember = AnyMember
 ):
-    total_tasks = await db.scalar(select(func.count(Task.id)).where(Task.workspace_id == workspace_id))
-    completed_tasks = await db.scalar(select(func.count(Task.id)).where(Task.workspace_id == workspace_id, Task.status == TaskStatus.completed))
-    pending_tasks = await db.scalar(select(func.count(Task.id)).where(Task.workspace_id == workspace_id, Task.status == TaskStatus.pending))
-    in_progress_tasks = await db.scalar(select(func.count(Task.id)).where(Task.workspace_id == workspace_id, Task.status == TaskStatus.in_progress))
+    # Tasks don't have workspace_id — scope via project_id belonging to this workspace
+    workspace_project_ids = select(Project.id).where(Project.workspace_id == workspace_id)
+
+    total_tasks = await db.scalar(select(func.count(Task.id)).where(Task.project_id.in_(workspace_project_ids)))
+    completed_tasks = await db.scalar(select(func.count(Task.id)).where(Task.project_id.in_(workspace_project_ids), Task.status == TaskStatus.completed))
+    pending_tasks = await db.scalar(select(func.count(Task.id)).where(Task.project_id.in_(workspace_project_ids), Task.status == TaskStatus.pending))
+    in_progress_tasks = await db.scalar(select(func.count(Task.id)).where(Task.project_id.in_(workspace_project_ids), Task.status == TaskStatus.in_progress))
     member_count = await db.scalar(select(func.count(WorkspaceMember.user_id)).where(WorkspaceMember.workspace_id == workspace_id))
     
     completion_rate = (completed_tasks / total_tasks * 100) if total_tasks else 0.0
     
-    priority_rows = await db.execute(select(Task.priority, func.count(Task.id)).where(Task.workspace_id == workspace_id).group_by(Task.priority))
+    priority_rows = await db.execute(select(Task.priority, func.count(Task.id)).where(Task.project_id.in_(workspace_project_ids)).group_by(Task.priority))
     tasks_by_priority = [{"label": row[0].value if hasattr(row[0], 'value') else row[0], "count": row[1]} for row in priority_rows.all()]
     
     member_rows = await db.execute(
         select(User.id, User.name, User.avatar_url, func.count(Task.id))
-        .outerjoin(Task, (Task.assignee_id == User.id) & (Task.workspace_id == workspace_id))
+        .outerjoin(Task, (Task.assignee_id == User.id) & (Task.project_id.in_(workspace_project_ids)))
         .join(WorkspaceMember, WorkspaceMember.user_id == User.id)
         .where(WorkspaceMember.workspace_id == workspace_id)
         .group_by(User.id)
@@ -195,7 +198,13 @@ async def get_workspace_analytics(
     tasks_by_member = []
     for row in member_rows.all():
         uid, uname, uavatar, tcount = row
-        user_completed = await db.scalar(select(func.count(Task.id)).where(Task.assignee_id == uid, Task.workspace_id == workspace_id, Task.status == TaskStatus.completed))
+        user_completed = await db.scalar(
+            select(func.count(Task.id)).where(
+                Task.assignee_id == uid,
+                Task.project_id.in_(workspace_project_ids),
+                Task.status == TaskStatus.completed
+            )
+        )
         tasks_by_member.append({
             "user_id": uid,
             "name": uname,

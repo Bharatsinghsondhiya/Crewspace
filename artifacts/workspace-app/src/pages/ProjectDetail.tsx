@@ -36,7 +36,7 @@ const settingsSchema = z.object({
 });
 type SettingsFormValues = z.infer<typeof settingsSchema>;
 
-function InviteProjectModalContent({ projectId, members, setInviteOpen }: { projectId: number, members: any[], setInviteOpen: (open: boolean) => void }) {
+function InviteProjectModalContent({ projectId, workspaceId, members, setInviteOpen }: { projectId: number, workspaceId: number, members: any[], setInviteOpen: (open: boolean) => void }) {
   const [search, setSearch] = useState("");
   const [role, setRole] = useState("member");
   const [invitingEmail, setInvitingEmail] = useState<string | null>(null);
@@ -44,16 +44,17 @@ function InviteProjectModalContent({ projectId, members, setInviteOpen }: { proj
   const inviteMutation = useAddProjectMember();
 
   const { data: users, isLoading, isError } = useQuery({
-    queryKey: ["users", search],
+    queryKey: ["users", workspaceId, search],
     queryFn: async () => {
       const token = localStorage.getItem("accessToken");
       const baseUrl = import.meta.env.VITE_API_URL || "";
-      const res = await fetch(`${baseUrl}/api/users?query=${encodeURIComponent(search)}`, {
+      const res = await fetch(`${baseUrl}/api/users?workspace_id=${workspaceId}&query=${encodeURIComponent(search)}`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (!res.ok) throw new Error("Failed to search users");
       return res.json();
-    }
+    },
+    enabled: !!workspaceId && workspaceId > 0
   });
 
   const onInvite = (email: string) => {
@@ -366,7 +367,7 @@ export default function ProjectDetail() {
                 <DialogHeader>
                   <DialogTitle>Invite to Project</DialogTitle>
                 </DialogHeader>
-                <InviteProjectModalContent projectId={projectId} members={members || []} setInviteOpen={setInviteOpen} />
+                <InviteProjectModalContent projectId={projectId} workspaceId={project.workspaceId} members={members || []} setInviteOpen={setInviteOpen} />
               </DialogContent>
             </Dialog>
           </div>
