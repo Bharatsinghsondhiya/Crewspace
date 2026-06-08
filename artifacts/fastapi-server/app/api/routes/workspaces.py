@@ -24,7 +24,7 @@ async def list_workspaces(db: AsyncSession = Depends(get_db), current_user: User
     if cached_workspaces:
         return cached_workspaces
 
-    # 2. Cache miss, query MySQL Database
+    # 2. Cache miss — query database
     stmt = (
         select(Workspace)
         .join(WorkspaceMember, Workspace.id == WorkspaceMember.workspace_id)
@@ -93,6 +93,8 @@ async def update_workspace(
     
     await db.commit()
     await db.refresh(ws)
+    # Invalidate cache so stale name/description is not served
+    await delete_cache_pattern(f"user:*:workspaces*")
     return ws
 
 @router.delete("/{workspace_id}", response_model=MessageResponse)

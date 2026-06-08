@@ -19,9 +19,17 @@ async def update_profile(
     update_data = profile_update.model_dump(exclude_unset=True)
     
     if "name" in update_data:
-        current_user.name = update_data["name"]
+        name = update_data["name"].strip()
+        if not name:
+            raise HTTPException(status_code=400, detail="Name cannot be empty")
+        if len(name) > 100:
+            raise HTTPException(status_code=400, detail="Name must be 100 characters or fewer")
+        current_user.name = name
     if "avatar_url" in update_data:
-        current_user.avatar_url = update_data["avatar_url"]
+        url = update_data["avatar_url"]
+        if url and not (url.startswith("https://") or url.startswith("http://")):
+            raise HTTPException(status_code=400, detail="Avatar URL must use http or https")
+        current_user.avatar_url = url
         
     db.add(current_user)
     await db.commit()

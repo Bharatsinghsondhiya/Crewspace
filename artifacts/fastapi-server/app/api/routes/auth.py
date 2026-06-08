@@ -150,6 +150,8 @@ async def reset_password(body: ResetPasswordBody, db: AsyncSession = Depends(get
     user.password_hash = security.get_password_hash(body.password)
     user.reset_token = None
     user.reset_token_expires_at = None
+    # Invalidate refresh token so old sessions cannot be reused after password change
+    user.refresh_token = None
     
     await db.commit()
     
@@ -177,11 +179,9 @@ async def db_test(db: AsyncSession = Depends(get_db), current_user: User = Depen
             "user_query": user_data
         }
     except Exception as e:
-        import traceback
         return {
             "status": "error",
-            "error": str(e),
-            "traceback": traceback.format_exc()
+            "error": "Database query failed. Check server logs."
         }
 
 

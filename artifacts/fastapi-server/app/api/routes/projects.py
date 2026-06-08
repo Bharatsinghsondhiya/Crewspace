@@ -211,11 +211,9 @@ async def add_project_member(project_id: int, body: InviteProjectMemberBody, db:
     
     try:
         await db.commit()
-    except Exception as e:
+    except Exception:
         await db.rollback()
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Database Error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to send invitation. Please try again.")
         
     return MessageResponse(message="Invitation sent successfully")
 
@@ -235,7 +233,8 @@ async def accept_project_invite(token: str, db: AsyncSession = Depends(get_db), 
         raise HTTPException(status_code=400, detail="Invitation already accepted")
         
     # Check expiry
-    if invitation.expires_at.replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
+    expires_at = invitation.expires_at if invitation.expires_at.tzinfo else invitation.expires_at.replace(tzinfo=timezone.utc)
+    if expires_at < datetime.now(timezone.utc):
         raise HTTPException(status_code=400, detail="Invitation expired")
         
     # Create member
