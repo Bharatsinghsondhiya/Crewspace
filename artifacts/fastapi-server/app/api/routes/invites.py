@@ -22,10 +22,9 @@ async def get_invite(token: str, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Invitation already accepted")
         
     now = datetime.now(timezone.utc)
-    if invite.expires_at.tzinfo is None:
-        now = now.replace(tzinfo=None)
+    expires_at = invite.expires_at if invite.expires_at.tzinfo else invite.expires_at.replace(tzinfo=timezone.utc)
         
-    if invite.expires_at < now:
+    if expires_at < now:
         raise HTTPException(status_code=400, detail="Invitation expired")
         
     return invite
@@ -46,10 +45,9 @@ async def accept_invite(
         raise HTTPException(status_code=400, detail="Invitation already accepted")
         
     now = datetime.now(timezone.utc)
-    if invite.expires_at.tzinfo is None:
-        now = now.replace(tzinfo=None)
+    expires_at = invite.expires_at if invite.expires_at.tzinfo else invite.expires_at.replace(tzinfo=timezone.utc)
         
-    if invite.expires_at < now:
+    if expires_at < now:
         raise HTTPException(status_code=400, detail="Invitation expired")
         
     # Check if user email matches the invite

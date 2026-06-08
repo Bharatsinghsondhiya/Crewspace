@@ -43,7 +43,8 @@ export default function Profile() {
         toast.success("Profile updated securely.");
         updateUser(updatedUser);
         queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
-      }
+      },
+      onError: () => toast.error("Failed to update profile. Please try again."),
     });
   };
 
@@ -66,7 +67,7 @@ export default function Profile() {
               {user?.avatarUrl ? (
                 <img src={user.avatarUrl} alt={user.name} className="w-full h-full object-cover" />
               ) : (
-                <span className="text-3xl font-black text-white">{user?.name?.charAt(0).toUpperCase()}</span>
+                <span className="text-3xl font-black text-white">{user?.name ? user.name.charAt(0).toUpperCase() : "?"}</span>
               )}
             </div>
           </div>

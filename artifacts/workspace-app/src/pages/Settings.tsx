@@ -10,12 +10,16 @@ export default function Settings() {
   const [marketing, setMarketing] = useState(false);
   const [compactMode, setCompactMode] = useState(false);
 
-  // Load from localStorage
+  // Load from localStorage and apply persistent effects on mount
   useEffect(() => {
     setEmailNotifs(localStorage.getItem("emailNotifs") !== "false");
     setInAppMentions(localStorage.getItem("inAppMentions") !== "false");
     setMarketing(localStorage.getItem("marketing") === "true");
-    setCompactMode(localStorage.getItem("compactMode") === "true");
+    const compact = localStorage.getItem("compactMode") === "true";
+    setCompactMode(compact);
+    // Apply compact class on initial load so it persists across page refreshes
+    if (compact) document.body.classList.add("compact-ui");
+    else document.body.classList.remove("compact-ui");
   }, []);
 
   // Save to localStorage
