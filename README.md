@@ -91,5 +91,6 @@ pnpm run dev
 ---
 
 <div align="center">
-  <i>Crafted with precision for secure team collaboration.</i>
+  <i>Crafted with precision for secure team collaboration.</i><br/>
+  <sub>Last updated: June 2026</sub>
 </div>
