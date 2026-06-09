@@ -171,21 +171,23 @@ export default function Workspaces() {
                       <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${color.bg} ${color.glow}`}>
                         <Briefcase className={`w-5 h-5 ${color.text}`} />
                       </div>
-                      <button className="opacity-0 group-hover:opacity-100 w-7 h-7 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                      <button
+                        aria-label="More options"
+                        className="opacity-0 group-hover:opacity-100 w-7 h-7 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all"
                         onClick={(e) => e.preventDefault()}>
                         <MoreVertical className="w-4 h-4" />
                       </button>
                     </div>
                     <h3 className="font-semibold text-white text-base leading-tight">{workspace.name}</h3>
-                    <p className="text-white/40 text-xs mt-1 line-clamp-1">{workspace.description || "No description"}</p>
+                    <p className="text-white/40 text-xs mt-1 line-clamp-2">{workspace.description || "No description"}</p>
                     <div className="flex items-center gap-4 mt-4 text-xs text-white/40">
                       <div className="flex items-center gap-1.5">
                         <Users className="h-3.5 w-3.5" />
-                        {workspace.memberCount} Members
+                        {workspace.memberCount ?? 0} Members
                       </div>
                       <div className="flex items-center gap-1.5">
                         <LayoutList className="h-3.5 w-3.5" />
-                        {workspace.taskCount} Tasks
+                        {workspace.taskCount ?? 0} Tasks
                       </div>
                     </div>
                   </div>

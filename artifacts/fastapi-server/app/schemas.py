@@ -40,6 +40,7 @@ class NotificationTypeEnum(str, Enum):
     due_date_reminder = 'due_date_reminder'
     task_completed = 'task_completed'
     workspace_invite = 'workspace_invite'
+    project_invite = 'project_invite'
     member_joined = 'member_joined'
 
 # Users & Auth
@@ -61,9 +62,9 @@ class LoginResponse(BaseSchema):
     refresh_token: str
 
 class SignupBody(BaseSchema):
-    name: str = Field(min_length=2)
+    name: str = Field(min_length=2, max_length=100)
     email: EmailStr
-    password: str = Field(min_length=8)
+    password: str = Field(min_length=8, max_length=128)
 
 class ChangePasswordBody(BaseSchema):
     current_password: str
@@ -106,7 +107,7 @@ class WorkspaceInvitationResponse(BaseSchema):
     workspace_id: int
     email: str
     role: WorkspaceRoleEnum
-    token: str
+    # token intentionally excluded from response to prevent sensitive data leakage
     expires_at: datetime
     accepted: bool
     created_at: datetime

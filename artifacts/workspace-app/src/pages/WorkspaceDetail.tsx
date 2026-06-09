@@ -201,17 +201,23 @@ export default function WorkspaceDetail() {
   };
 
   const onRemove = (userId: number) => {
-    if (!confirm("Are you sure you want to remove this member?")) return;
-    removeMemberMutation.mutate(
-      { workspaceId: id, userId },
-      {
-        onSuccess: () => {
-          toast.success("Member removed");
-          queryClient.invalidateQueries({ queryKey: getGetWorkspaceMembersQueryKey(id) });
+    toast("Remove this member?", {
+      action: {
+        label: "Remove",
+        onClick: () => {
+          removeMemberMutation.mutate(
+            { workspaceId: id, userId },
+            {
+              onSuccess: () => {
+                toast.success("Member removed");
+                queryClient.invalidateQueries({ queryKey: getGetWorkspaceMembersQueryKey(id) });
+              },
+              onError: () => toast.error("Failed to remove member"),
+            }
+          );
         },
-        onError: () => toast.error("Failed to remove member"),
-      }
-    );
+      },
+    });
   };
 
   if (wsLoading) {
@@ -288,6 +294,7 @@ export default function WorkspaceDetail() {
                 <DialogContent className="bg-[#0a0518] border-white/10 text-white rounded-2xl shadow-2xl sm:max-w-md w-[95%]">
                   <DialogHeader>
                     <DialogTitle className="text-xl">Invite Member</DialogTitle>
+                    <DialogDescription className="text-white/50 text-sm">Search for a platform user to invite to this workspace.</DialogDescription>
                   </DialogHeader>
                   <InviteModalContent workspaceId={id} members={members || []} setInviteOpen={setInviteOpen} />
                 </DialogContent>
@@ -316,7 +323,7 @@ export default function WorkspaceDetail() {
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500/20 to-indigo-500/20 border border-purple-500/30 flex items-center justify-center shrink-0">
                               <span className="text-sm font-bold text-purple-300">
-                                {member.user.name?.charAt(0).toUpperCase()}
+                                {member.user.name ? member.user.name.charAt(0).toUpperCase() : "?"}
                               </span>
                             </div>
                             <div className="min-w-0">

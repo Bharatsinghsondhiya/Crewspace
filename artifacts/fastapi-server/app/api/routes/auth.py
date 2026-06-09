@@ -86,15 +86,17 @@ async def forgot_password(body: ForgotPasswordBody, db: AsyncSession = Depends(g
         # Prevent Email Enumeration / User Enumeration vulnerability
         return MessageResponse(message="If the email exists, a reset link will be sent.")
         
-    # Generate secure random token
-    token = secrets.token_urlsafe(32)
-    user.reset_token = token
+    # Generate secure random token and store only its hash
+    raw_token = secrets.token_urlsafe(32)
+    import hashlib
+    token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
+    user.reset_token = token_hash
     user.reset_token_expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
     
     await db.commit()
     
-    # Construct reset link and email content
-    reset_link = f"{settings.FRONTEND_URL}/reset-password?token={token}"
+    # Construct reset link with the raw (unhashed) token
+    reset_link = f"{settings.FRONTEND_URL}/reset-password?token={raw_token}"
     
     html_content = f"""
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
@@ -125,7 +127,18 @@ async def forgot_password(body: ForgotPasswordBody, db: AsyncSession = Depends(g
 
 @router.post("/reset-password", response_model=MessageResponse)
 async def reset_password(body: ResetPasswordBody, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(User).filter(User.reset_token == body.token))
+    import hashlib, re
+    
+    # Validate password strength: min 8 chars, at least one uppercase, one digit or special char
+    pwd = body.password
+    if not re.search(r"[A-Z]", pwd):
+        raise HTTPException(status_code=400, detail="Password must contain at least one uppercase letter")
+    if not re.search(r"[0-9!@#$%^&*()_+\-=\[\]{};':,./<>?]", pwd):
+        raise HTTPException(status_code=400, detail="Password must contain at least one digit or special character")
+    
+    # Hash the incoming raw token before lookup
+    token_hash = hashlib.sha256(body.token.encode()).hexdigest()
+    result = await db.execute(select(User).filter(User.reset_token == token_hash))
     user = result.scalars().first()
     
     if not user:

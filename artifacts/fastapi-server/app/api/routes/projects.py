@@ -266,8 +266,14 @@ async def remove_project_member(project_id: int, user_id: int, db: AsyncSession 
     if not member_to_remove:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Member not found")
 
-    if member_to_remove.role == ProjectMemberRole.admin:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot remove owner")
+    # Prevent removal of the project creator (owner) — fetch project to check
+    project = await db.scalar(select(Project).where(Project.id == project_id))
+    if project and project.created_by_id == user_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot remove the project creator")
+
+    # Prevent an admin from removing themselves if they're the only admin
+    if user_id == current_user.id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot remove yourself from the project")
 
     await db.delete(member_to_remove)
     await db.commit()

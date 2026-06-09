@@ -1,4 +1,4 @@
-import { useGetProjects, useCreateProject, useGetWorkspaceMembers, useGetWorkspace, getGetProjectsQueryKey, getGetWorkspaceMembersQueryKey, getGetWorkspaceQueryKey } from "@workspace/api-client-react";
+import { useListWorkspaceProjects, useCreateProject, useGetWorkspaceMembers, useGetWorkspace, getListWorkspaceProjectsQueryKey, getGetWorkspaceMembersQueryKey, getGetWorkspaceQueryKey } from "@workspace/api-client-react";
 import { useAuth } from "@/context/AuthContext";
 import { useParams, Link } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -29,12 +29,10 @@ export default function WorkspaceProjects() {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
 
-  // Fetch ALL projects current user is a member of, then filter by workspaceId
-  const { data: allProjects, isLoading: projectsLoading } = useGetProjects({}, {
-    query: { enabled: !!workspaceId, queryKey: getGetProjectsQueryKey({}) }
+  // Fetch projects directly scoped to this workspace
+  const { data: projects = [], isLoading: projectsLoading } = useListWorkspaceProjects(workspaceId, {
+    query: { enabled: !!workspaceId, queryKey: getListWorkspaceProjectsQueryKey(workspaceId) }
   });
-
-  const projects = allProjects?.filter((p: any) => p.workspaceId === workspaceId) ?? [];
 
   const { data: members } = useGetWorkspaceMembers(workspaceId, {
     query: { enabled: !!workspaceId, queryKey: getGetWorkspaceMembersQueryKey(workspaceId) }
@@ -63,7 +61,7 @@ export default function WorkspaceProjects() {
           setOpen(false);
           toast.success("Project created!");
           form.reset();
-          queryClient.invalidateQueries({ queryKey: getGetProjectsQueryKey({}) });
+          queryClient.invalidateQueries({ queryKey: getListWorkspaceProjectsQueryKey(workspaceId) });
         },
         onError: (err: any) => {
           toast.error(err?.response?.data?.detail || "Failed to create project");

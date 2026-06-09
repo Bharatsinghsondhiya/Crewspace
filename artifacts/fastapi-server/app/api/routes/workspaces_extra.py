@@ -7,7 +7,7 @@ import secrets
 from datetime import datetime, timedelta, timezone
 
 from app.db.database import get_db
-from app.models import Workspace, WorkspaceMember, User, Task, TaskStatus, TaskPriority, WorkspaceInvitation, Notification, NotificationType, ActivityLog, Project
+from app.models import Workspace, WorkspaceMember, User, Task, TaskStatus, TaskPriority, WorkspaceInvitation, Notification, NotificationType, ActivityLog, Project, ProjectMember
 import json
 from app.schemas import (
     WorkspaceResponseItem, WorkspaceMemberResponse, TaskResponseItem, 
@@ -112,11 +112,21 @@ async def create_invite(
     return invite
 
 @router.get("/{workspace_id}/projects", response_model=List[ProjectResponseItem])
-async def list_workspace_projects(workspace_id: int, db: AsyncSession = Depends(get_db), _: WorkspaceMember = AnyMember):
-    stmt = select(Project).where(Project.workspace_id == workspace_id)
+async def list_workspace_projects(workspace_id: int, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user), _: WorkspaceMember = AnyMember):
+    from sqlalchemy.orm import aliased
+    pm = aliased(ProjectMember)
+    stmt = (
+        select(Project, pm.role)
+        .outerjoin(pm, (Project.id == pm.project_id) & (pm.user_id == current_user.id))
+        .where(Project.workspace_id == workspace_id)
+    )
     result = await db.execute(stmt)
-    projects = result.scalars().all()
-    return projects
+    rows = result.all()
+    response = []
+    for proj, role in rows:
+        proj.my_role = role
+        response.append(proj)
+    return response
 
 
 
