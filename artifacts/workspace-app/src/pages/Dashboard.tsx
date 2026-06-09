@@ -194,13 +194,13 @@ function AdminDashboard() {
         <div>
           <div className="flex items-center gap-3 mb-2">
             <h1 className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-violet-300 to-fuchsia-400">
-              Commander Dashboard
+              Admin Dashboard
             </h1>
             <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30 gap-1 text-xs px-2 py-1 uppercase tracking-widest">
-              <Shield className="h-3 w-3" /> Project Admin
+              <Shield className="h-3 w-3" /> Platform Admin
             </Badge>
           </div>
-          <p className="text-white/50 text-sm md:text-base">Orchestrate your high-level projects, workshops, and team members across the platform.</p>
+          <p className="text-white/50 text-sm md:text-base">Orchestrate your high-level projects, workspaces, and team members across the platform.</p>
         </div>
       </div>
 
@@ -226,7 +226,7 @@ function AdminDashboard() {
                 <Briefcase className="w-6 h-6 text-white" />
               </div>
               <div className="text-4xl font-black text-white">{stats?.totalWorkspaces || 0}</div>
-              <div className="text-sm text-white/50 font-medium mt-1 uppercase tracking-wider">Total Workshops</div>
+              <div className="text-sm text-white/50 font-medium mt-1 uppercase tracking-wider">Total Workspaces</div>
             </div>
 
             <div className="bg-black/40 backdrop-blur-3xl border border-white/10 rounded-3xl p-6 relative overflow-hidden group hover:border-blue-500/40 transition-colors">
@@ -235,7 +235,7 @@ function AdminDashboard() {
                 <Users className="w-6 h-6 text-white" />
               </div>
               <div className="text-4xl font-black text-white">{stats?.totalUsers || 0}</div>
-              <div className="text-sm text-white/50 font-medium mt-1 uppercase tracking-wider">Platform Agents</div>
+              <div className="text-sm text-white/50 font-medium mt-1 uppercase tracking-wider">Platform Users</div>
             </div>
 
             <div className="bg-black/40 backdrop-blur-3xl border border-white/10 rounded-3xl p-6 relative overflow-hidden group hover:border-emerald-500/40 transition-colors">
@@ -244,7 +244,7 @@ function AdminDashboard() {
                 <BarChart3 className="w-6 h-6 text-white" />
               </div>
               <div className="text-4xl font-black text-white">{stats?.totalTasks || 0}</div>
-              <div className="text-sm text-white/50 font-medium mt-1 uppercase tracking-wider">Total Objectives</div>
+              <div className="text-sm text-white/50 font-medium mt-1 uppercase tracking-wider">Total Tasks</div>
             </div>
           </div>
 

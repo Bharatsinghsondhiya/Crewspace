@@ -203,10 +203,10 @@ export default function WorkspaceProjects() {
                   </Badge>
                 </div>
 
-                <h3 className="font-semibold text-white text-base mb-1 leading-snug line-clamp-1">
+                <h3 className="font-semibold text-white text-base mb-1 leading-snug line-clamp-1 break-all">
                   {project.name}
                 </h3>
-                <p className="text-white/40 text-xs line-clamp-2 leading-relaxed mb-4">
+                <p className="text-white/40 text-xs line-clamp-2 leading-relaxed mb-4 break-words">
                   {project.description || "No description provided."}
                 </p>
 
