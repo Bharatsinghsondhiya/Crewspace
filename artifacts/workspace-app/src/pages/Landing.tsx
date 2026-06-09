@@ -393,7 +393,7 @@ export default function Landing() {
           {/* FOOTER CTA */}
           <section className="px-6 md:px-12 max-w-3xl mx-auto text-center border-t border-white/10 pt-24">
             <Terminal size={32} className="mx-auto text-purple-400/50 mb-6" />
-            <h2 className="text-3xl font-medium text-white tracking-tight mb-4">Start your engine.</h2>
+            <h2 className="text-3xl font-medium text-white tracking-tight mb-4">Start your workflow engine.</h2>
             <p className="text-white/60 mb-8">Join thousands of ambitious individuals building their ideal workflow.</p>
             <div className="flex max-w-md mx-auto items-center shadow-2xl shadow-purple-500/10 rounded-lg overflow-hidden border border-white/10">
               <input 
@@ -402,7 +402,7 @@ export default function Landing() {
                 className="flex-1 bg-black/40 h-12 px-4 text-sm font-mono focus:outline-none focus:bg-black/60 text-white placeholder:text-white/30 transition-colors"
               />
               <button className="h-12 px-6 bg-white text-black font-semibold text-sm hover:bg-white/90 transition-colors">
-                Get Access
+                Get Started
               </button>
             </div>
             <div className="mt-8 flex items-center justify-center gap-6 text-white/40 text-xs font-mono">
