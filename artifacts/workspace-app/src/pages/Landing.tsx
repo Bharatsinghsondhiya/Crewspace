@@ -237,7 +237,7 @@ export default function Landing() {
                 Your personal operating <br /> system for focused work.
               </h1>
               <p className="text-base sm:text-lg text-white/60 max-w-xl leading-relaxed px-4 sm:px-0">
-                Plan less. Execute better. Review everything. A calm, keyboard-first command center for your tasks, routines, notes, and deep work.
+                Plan less. Execute more. Review everything. A calm, keyboard-first command center for your tasks, routines, notes, and deep work.
               </p>
               <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 pt-4 w-full sm:w-auto px-6 sm:px-0">
                 <button 

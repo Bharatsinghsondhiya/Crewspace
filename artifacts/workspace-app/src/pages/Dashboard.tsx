@@ -226,7 +226,7 @@ function AdminDashboard() {
                 <Briefcase className="w-6 h-6 text-white" />
               </div>
               <div className="text-4xl font-black text-white">{stats?.totalWorkspaces || 0}</div>
-              <div className="text-sm text-white/50 font-medium mt-1 uppercase tracking-wider">Total Workspaces</div>
+              <div className="text-sm text-white/50 font-medium mt-1 uppercase tracking-wider">Workspaces</div>
             </div>
 
             <div className="bg-black/40 backdrop-blur-3xl border border-white/10 rounded-3xl p-6 relative overflow-hidden group hover:border-blue-500/40 transition-colors">
@@ -235,7 +235,7 @@ function AdminDashboard() {
                 <Users className="w-6 h-6 text-white" />
               </div>
               <div className="text-4xl font-black text-white">{stats?.totalUsers || 0}</div>
-              <div className="text-sm text-white/50 font-medium mt-1 uppercase tracking-wider">Platform Users</div>
+              <div className="text-sm text-white/50 font-medium mt-1 uppercase tracking-wider">Users</div>
             </div>
 
             <div className="bg-black/40 backdrop-blur-3xl border border-white/10 rounded-3xl p-6 relative overflow-hidden group hover:border-emerald-500/40 transition-colors">
@@ -244,7 +244,7 @@ function AdminDashboard() {
                 <BarChart3 className="w-6 h-6 text-white" />
               </div>
               <div className="text-4xl font-black text-white">{stats?.totalTasks || 0}</div>
-              <div className="text-sm text-white/50 font-medium mt-1 uppercase tracking-wider">Total Tasks</div>
+              <div className="text-sm text-white/50 font-medium mt-1 uppercase tracking-wider">Tasks</div>
             </div>
           </div>
 
