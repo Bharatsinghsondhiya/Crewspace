@@ -66,9 +66,29 @@ class SignupBody(BaseSchema):
     email: EmailStr
     password: str = Field(min_length=8, max_length=128)
 
+    @field_validator("password")
+    @classmethod
+    def validate_password_strength(cls, v):
+        import re
+        if not re.search(r"[A-Z]", v):
+            raise ValueError("Password must contain at least one uppercase letter")
+        if not re.search(r"[0-9!@#$%^&*()_+\-=\[\]{};':,./<>?]", v):
+            raise ValueError("Password must contain at least one digit or special character")
+        return v
+
 class ChangePasswordBody(BaseSchema):
     current_password: str
-    new_password: str = Field(min_length=8)
+    new_password: str = Field(min_length=8, max_length=128)
+
+    @field_validator("new_password")
+    @classmethod
+    def validate_password_strength(cls, v):
+        import re
+        if not re.search(r"[A-Z]", v):
+            raise ValueError("Password must contain at least one uppercase letter")
+        if not re.search(r"[0-9!@#$%^&*()_+\-=\[\]{};':,./<>?]", v):
+            raise ValueError("Password must contain at least one digit or special character")
+        return v
 
 class MessageResponse(BaseSchema):
     message: str
